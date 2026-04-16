@@ -66,14 +66,14 @@ function LoginForm() {
           transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="flex justify-center mb-6"
         >
-          <div className="bg-white rounded-xl px-6 py-4 shadow-2xl shadow-black/50">
+          <div className="bg-white rounded-xl px-8 py-5 shadow-2xl shadow-black/50">
             <Image
               src="/logos/raederlogistik-Logo.svg"
               alt="Räderlogistik"
-              width={180}
-              height={52}
+              width={240}
+              height={70}
               priority
-              className="h-12 w-auto"
+              className="h-16 w-auto"
             />
           </div>
         </motion.div>
