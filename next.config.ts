@@ -1,11 +1,19 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/signin',
+        permanent: false,
+      },
+    ]
+  },
   async headers() {
     return [
       {
-        // Login-Seite nicht cachen (verhindert nginx-Proxy-Cache mit veralteten Chunks)
-        source: '/login',
+        source: '/signin',
         headers: [
           {
             key: 'Cache-Control',

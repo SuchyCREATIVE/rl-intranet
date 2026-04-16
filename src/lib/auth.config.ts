@@ -9,7 +9,7 @@ export const authConfig: NextAuthConfig = {
     strategy: 'jwt',
   },
   pages: {
-    signIn: '/login',
+    signIn: '/signin',
   },
   callbacks: {
     async session({ session, token }) {

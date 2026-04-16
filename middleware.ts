@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-const PUBLIC_PATHS = ['/login', '/api/auth', '/api/debug-auth']
+const PUBLIC_PATHS = ['/signin', '/api/auth', '/api/debug-auth']
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path + '/'))
@@ -29,7 +29,7 @@ export async function middleware(req: NextRequest) {
 
   // Nicht eingeloggt → /login
   if (!token) {
-    const loginUrl = new URL('/login', req.url)
+    const loginUrl = new URL('/signin', req.url)
     loginUrl.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(loginUrl)
   }
