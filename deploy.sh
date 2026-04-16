@@ -41,6 +41,9 @@ ssh "${SSH_USER}@${SSH_HOST}" "
   echo '  npm install...'
   npm install 2>&1 | tail -3
 
+  echo '  prisma generate...'
+  DATABASE_URL='file:./dev.db' npx prisma generate 2>&1 | tail -3
+
   echo '  npm run build...'
   npm run build 2>&1 | tail -15
   BUILD_EXIT=\${PIPESTATUS[0]}

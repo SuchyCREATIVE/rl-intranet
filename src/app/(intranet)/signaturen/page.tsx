@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Copy, Check, Upload, X, Save, BookOpen, Pen } from 'lucide-react'
+import { Copy, Check, Upload, X, Save, BookOpen, Pen, Trash2, FolderOpen, ChevronDown, ChevronUp } from 'lucide-react'
 import Link from 'next/link'
 import SignaturePreview from '@/components/SignaturePreview'
 import { SignatureData, generateSignatureHTMLSync } from '@/lib/signature-export'
 
 const schema = z.object({
+  name: z.string().optional(),
   company: z.enum(['raederlogistik', 'reifen-gerlach']),
   firstName: z.string().min(1, 'Vorname ist erforderlich'),
   lastName: z.string().min(1, 'Nachname ist erforderlich'),
@@ -25,10 +26,31 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
+interface SavedSignature {
+  id: string
+  name?: string | null
+  company: string
+  firstName: string
+  lastName: string
+  position: string
+  phone?: string | null
+  fax?: string | null
+  mobile?: string | null
+  email: string
+  website?: string | null
+  photoUrl?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export default function SignaturenPage() {
   const [activeTab, setActiveTab] = useState<'generator' | 'anleitung'>('generator')
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [savedSignatures, setSavedSignatures] = useState<SavedSignature[]>([])
+  const [savedListOpen, setSavedListOpen] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
@@ -36,10 +58,12 @@ export default function SignaturenPage() {
     watch,
     setValue,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      name: '',
       company: 'raederlogistik',
       firstName: '',
       lastName: '',
@@ -68,9 +92,40 @@ export default function SignaturenPage() {
     photoUrl: formValues.photoUrl || undefined,
   }
 
+  // Gespeicherte Signaturen laden
+  const loadSavedSignatures = useCallback(async () => {
+    try {
+      const res = await fetch('/api/signatures')
+      if (res.ok) {
+        const data = await res.json()
+        setSavedSignatures(data)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  useEffect(() => {
+    loadSavedSignatures()
+  }, [loadSavedSignatures])
+
+  // Foto-Upload per Klick
   const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setValue('photoUrl', event.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+  }, [setValue])
+
+  // Foto-Upload per Drag & Drop
+  const handleDrop = useCallback((e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (!file || !file.type.startsWith('image/')) return
     const reader = new FileReader()
     reader.onload = (event) => {
       setValue('photoUrl', event.target?.result as string)
@@ -106,11 +161,43 @@ export default function SignaturenPage() {
       if (res.ok) {
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
+        await loadSavedSignatures()
+        setSavedListOpen(true)
       }
     } catch {
       // ignore
     }
-  }, [])
+  }, [loadSavedSignatures])
+
+  const handleLoadSignature = useCallback((sig: SavedSignature) => {
+    reset({
+      name: sig.name || '',
+      company: sig.company as 'raederlogistik' | 'reifen-gerlach',
+      firstName: sig.firstName,
+      lastName: sig.lastName,
+      position: sig.position,
+      phone: sig.phone || '',
+      fax: sig.fax || '',
+      mobile: sig.mobile || '',
+      email: sig.email,
+      website: sig.website || '',
+      photoUrl: sig.photoUrl || '',
+    })
+  }, [reset])
+
+  const handleDeleteSignature = useCallback(async (id: string) => {
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/signatures?id=${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        await loadSavedSignatures()
+      }
+    } catch {
+      // ignore
+    } finally {
+      setDeletingId(null)
+    }
+  }, [loadSavedSignatures])
 
   const inputClass = "w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
 
@@ -166,6 +253,73 @@ export default function SignaturenPage() {
             transition={{ duration: 0.2 }}
             className="max-w-6xl mx-auto px-6 py-6 space-y-6"
           >
+            {/* Gespeicherte Signaturen */}
+            {savedSignatures.length > 0 && (
+              <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setSavedListOpen(!savedListOpen)}
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-zinc-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-6 rounded-full bg-zinc-300" />
+                    <h2 className="font-semibold text-zinc-800">
+                      Gespeicherte Signaturen
+                      <span className="ml-2 text-xs font-normal text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">
+                        {savedSignatures.length}
+                      </span>
+                    </h2>
+                  </div>
+                  {savedListOpen ? <ChevronUp size={16} className="text-zinc-400" /> : <ChevronDown size={16} className="text-zinc-400" />}
+                </button>
+                <AnimatePresence>
+                  {savedListOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="border-t border-zinc-100 divide-y divide-zinc-50">
+                        {savedSignatures.map((sig) => (
+                          <div key={sig.id} className="flex items-center gap-4 px-6 py-3 hover:bg-zinc-50 transition-colors">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-zinc-800 truncate">
+                                {sig.name || `${sig.firstName} ${sig.lastName}`}
+                              </p>
+                              <p className="text-xs text-zinc-400 truncate">
+                                {sig.position} · {sig.email}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleLoadSignature(sig)}
+                                className="flex items-center gap-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 transition-all"
+                              >
+                                <FolderOpen size={13} />
+                                Laden
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteSignature(sig.id)}
+                                disabled={deletingId === sig.id}
+                                className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-red-500 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-red-200 transition-all disabled:opacity-50"
+                              >
+                                <Trash2 size={13} />
+                                {deletingId === sig.id ? '...' : 'Löschen'}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
             {/* Form */}
             <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-3">
@@ -201,11 +355,22 @@ export default function SignaturenPage() {
                         </button>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => fileInputRef.current?.click()}
-                        className="w-full h-[104px] flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-200 rounded-lg text-sm text-zinc-500 hover:border-[#DCFF0C]/50 hover:text-zinc-700 transition-all">
-                        <Upload size={18} />
-                        <span>Foto hochladen</span>
-                        <span className="text-xs text-zinc-400">JPG, PNG</span>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                        onDragEnter={(e) => { e.preventDefault(); setIsDragging(true) }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={handleDrop}
+                        className={`w-full h-[104px] flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg text-sm transition-all ${
+                          isDragging
+                            ? 'border-[#DCFF0C] bg-[#DCFF0C]/5 text-zinc-800'
+                            : 'border-zinc-200 text-zinc-500 hover:border-[#DCFF0C]/50 hover:text-zinc-700'
+                        }`}
+                      >
+                        <Upload size={18} className={isDragging ? 'text-[#DCFF0C]' : ''} />
+                        <span>{isDragging ? 'Datei loslassen' : 'Foto hochladen'}</span>
+                        <span className="text-xs text-zinc-400">JPG, PNG · Drag & Drop oder Klick</span>
                       </button>
                     )}
                   </div>
@@ -274,13 +439,21 @@ export default function SignaturenPage() {
                   </div>
                 </div>
 
-                <div className="mt-5 pt-5 border-t border-zinc-100">
+                {/* Speichern */}
+                <div className="mt-5 pt-5 border-t border-zinc-100 flex items-center gap-4 flex-wrap">
+                  <div className="flex-1 min-w-[200px]">
+                    <input
+                      {...register('name')}
+                      placeholder={'Signatur-Name (optional, z.\u00a0B. \u201eHauptsignatur\u201c)'}
+                      className={inputClass}
+                    />
+                  </div>
                   <button
                     type="submit"
-                    className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 text-white text-sm font-medium rounded-lg hover:bg-zinc-700 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 text-white text-sm font-medium rounded-lg hover:bg-zinc-700 transition-colors whitespace-nowrap"
                   >
                     {saved ? <Check size={15} className="text-[#DCFF0C]" /> : <Save size={15} />}
-                    {saved ? 'Gespeichert!' : 'In Datenbank speichern'}
+                    {saved ? 'Gespeichert!' : 'Signatur speichern'}
                   </button>
                 </div>
               </form>

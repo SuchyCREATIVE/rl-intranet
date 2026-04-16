@@ -34,6 +34,7 @@ model Settings {
 
 model SignatureTemplate {
   id          String   @id @default(cuid())
+  name        String?  // Anzeigename / Beschriftung
   company     String   // "raederlogistik" | "reifen-gerlach"
   firstName   String
   lastName    String

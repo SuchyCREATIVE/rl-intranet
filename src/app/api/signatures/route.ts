@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     const templates = await prisma.signatureTemplate.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
     })
     return NextResponse.json(templates)
   } catch (error) {
@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     const {
+      name,
       company,
       firstName,
       lastName,
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
 
     const template = await prisma.signatureTemplate.create({
       data: {
+        name: name || null,
         company,
         firstName,
         lastName,
@@ -67,6 +69,26 @@ export async function POST(request: NextRequest) {
     console.error('Error creating signature template:', error)
     return NextResponse.json(
       { error: 'Fehler beim Speichern der Signatur' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID fehlt' }, { status: 400 })
+    }
+
+    await prisma.signatureTemplate.delete({ where: { id } })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting signature template:', error)
+    return NextResponse.json(
+      { error: 'Fehler beim Löschen der Signatur' },
       { status: 500 }
     )
   }
