@@ -84,7 +84,7 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
   const handleLogout = async () => {
     setIsLoggingOut(true)
     await signOut({ redirect: false })
-    router.push('/auth')
+    router.push('/login')
   }
 
   const isActive = (href: string) => {

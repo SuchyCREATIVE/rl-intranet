@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/login'
 import { LayoutDashboard, Users, Mail, Settings, HelpCircle, ShieldCheck } from 'lucide-react'
 import AdminSidebarClient from './AdminSidebarClient'
 
@@ -20,11 +20,11 @@ export default async function AdminLayout({
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/auth?callbackUrl=/admin')
+    redirect('/login?callbackUrl=/admin')
   }
 
   if (session.user.role !== 'admin') {
-    redirect('/auth?error=unauthorized')
+    redirect('/login?error=unauthorized')
   }
 
   return (

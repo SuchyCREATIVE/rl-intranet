@@ -3,14 +3,14 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      { source: '/login', destination: '/auth', permanent: false },
-      { source: '/signin', destination: '/auth', permanent: false },
+      { source: '/auth', destination: '/login', permanent: false },
+      { source: '/signin', destination: '/login', permanent: false },
     ]
   },
   async headers() {
     return [
       {
-        source: '/auth',
+        source: '/login',
         headers: [
           {
             key: 'Cache-Control',
