@@ -1,0 +1,49 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../src/generated/prisma/client"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  username      String    @unique
+  email         String    @unique
+  passwordHash  String
+  role          String    @default("redakteur") // "admin" | "redakteur"
+  createdAt     DateTime  @default(now())
+  lastLoginAt   DateTime?
+  sessions      Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+}
+
+model Settings {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model SignatureTemplate {
+  id          String   @id @default(cuid())
+  company     String   // "raederlogistik" | "reifen-gerlach"
+  firstName   String
+  lastName    String
+  position    String
+  phone       String?
+  fax         String?
+  mobile      String?
+  email       String
+  website     String?
+  photoUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
