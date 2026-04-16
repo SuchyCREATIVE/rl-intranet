@@ -45,44 +45,19 @@ function LoginForm() {
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
-      {/* Background: Dark industrial gradient with tire-warehouse feel */}
+      {/* Background: echtes Reifenlager-Foto */}
       <div
         className="absolute inset-0 z-0"
         style={{
-          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 30%, #0f0f0f 60%, #050505 100%)',
+          backgroundImage: 'url(/login-bg.webp)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
       />
-
-      {/* Subtle tire-tread pattern overlay */}
-      <div
-        className="absolute inset-0 z-0 opacity-[0.04]"
-        style={{
-          backgroundImage: `
-            repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 20px,
-              rgba(255,255,255,0.5) 20px,
-              rgba(255,255,255,0.5) 22px
-            ),
-            repeating-linear-gradient(
-              90deg,
-              transparent,
-              transparent 20px,
-              rgba(255,255,255,0.5) 20px,
-              rgba(255,255,255,0.5) 22px
-            )
-          `,
-        }}
-      />
-
-      {/* Radial glow in center */}
+      {/* Dunkles Overlay für Lesbarkeit */}
       <div
         className="absolute inset-0 z-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(220,255,12,0.04) 0%, transparent 70%)',
-        }}
+        style={{ background: 'rgba(0,0,0,0.65)' }}
       />
 
       {/* Login Card */}

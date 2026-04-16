@@ -19,32 +19,33 @@ else
   exit 1
 fi
 
-echo "▶ Build..."
-npm run build
-
-echo "▶ Deploy nach $URL ..."
+echo "▶ Quellcode auf Server übertragen..."
+# KEIN .next übertragen – Build läuft auf dem Server (native module better-sqlite3)
 rsync -avz --delete \
   --exclude='.git' \
   --exclude='.env*' \
   --exclude='node_modules' \
-  --exclude='.next/cache' \
+  --exclude='.next' \
   --exclude='*.db' \
   --exclude='*.db-shm' \
   --exclude='*.db-wal' \
   ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}"
 
-echo "▶ Server einrichten und PM2 neu starten..."
+echo "▶ Build auf Server starten (native modules)..."
 ssh "${SSH_USER}@${SSH_HOST}" "
   export PATH=${NODE_PATH}:\$PATH
   cd ${REMOTE_PATH}
 
-  # npm install
-  npm install --production 2>&1 | tail -3
+  echo '  npm install...'
+  npm install 2>&1 | tail -3
 
-  # DB-Tabellen aktualisieren (falls Schema geändert)
+  echo '  npm run build...'
+  npm run build 2>&1 | tail -15
+
+  echo '  DB-Tabellen aktualisieren...'
   DATABASE_URL='file:./dev.db' npx prisma db push 2>&1 | tail -3
 
-  # PM2 neu starten
+  echo '  PM2 neu starten...'
   ${PM2} restart ${PROJECT} 2>&1 || ${PM2} start npm --name ${PROJECT} -- start 2>&1
 
   echo 'Server bereit.'
