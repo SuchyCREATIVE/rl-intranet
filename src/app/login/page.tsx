@@ -1,14 +1,13 @@
 'use client'
 
 import { Suspense, useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react'
+import { loginAction } from './actions'
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
 
@@ -24,18 +23,11 @@ function LoginForm() {
     setIsLoading(true)
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      })
-
+      const result = await loginAction(email, password, callbackUrl)
       if (result?.error) {
-        setError('E-Mail-Adresse oder Passwort ist falsch.')
-      } else {
-        router.push(callbackUrl)
-        router.refresh()
+        setError(result.error)
       }
+      // Bei Erfolg: Server Action redirectet über Next.js NEXT_REDIRECT
     } catch {
       setError('Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.')
     } finally {
