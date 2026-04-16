@@ -27,6 +27,8 @@ declare module '@auth/core/jwt' {
 }
 
 export const authConfig: NextAuthConfig = {
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? 'rl-intranet-secret-2026',
+  basePath: '/api/auth',
   trustHost: true,
   providers: [
     CredentialsProvider({
@@ -35,33 +37,15 @@ export const authConfig: NextAuthConfig = {
         email: { label: 'E-Mail', type: 'email' },
         password: { label: 'Passwort', type: 'password' },
       },
+      // MINIMAL TEST: Kein Prisma, gibt immer dennis zurück wenn Passwort "password"
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
-
-        const email = credentials.email as string
-        const password = credentials.password as string
-
-        const user = await prisma.user.findUnique({
-          where: { email },
-        })
-
-        if (!user) {
-          return null
-        }
-
-        const passwordValid = await bcrypt.compare(password, user.passwordHash)
-
-        if (!passwordValid) {
-          return null
-        }
-
+        if (!credentials?.email || !credentials?.password) return null
+        if (String(credentials.password) !== 'password') return null
         return {
-          id: user.id,
-          email: user.email,
-          name: user.username,
-          role: user.role,
+          id: 'test-id',
+          email: 'dennis@suchycreative.de',
+          name: 'Dennis',
+          role: 'admin',
         }
       },
     }),
@@ -81,12 +65,6 @@ export const authConfig: NextAuthConfig = {
         token.id = user.id as string
         token.role = (user as { role: string }).role
         token.email = (user.email ?? '') as string
-
-        // lastLoginAt aktualisieren
-        await prisma.user.update({
-          where: { id: user.id as string },
-          data: { lastLoginAt: new Date() },
-        })
       }
       return token
     },
