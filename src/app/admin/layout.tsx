@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { auth } from '@/lib/login'
+import { auth } from '@/lib/auth'
 import { LayoutDashboard, Users, Mail, Settings, HelpCircle, ShieldCheck } from 'lucide-react'
 import AdminSidebarClient from './AdminSidebarClient'
 

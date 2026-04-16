@@ -43,7 +43,8 @@ ssh "${SSH_USER}@${SSH_HOST}" "
 
   echo '  npm run build...'
   npm run build 2>&1 | tail -15
-  if [ \$? -ne 0 ]; then
+  BUILD_EXIT=\${PIPESTATUS[0]}
+  if [ \$BUILD_EXIT -ne 0 ]; then
     echo 'BUILD FEHLGESCHLAGEN – Deploy abgebrochen.'
     exit 1
   fi
