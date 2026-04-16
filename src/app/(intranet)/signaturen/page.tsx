@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -9,7 +9,6 @@ import { Copy, Check, Upload, X, Save, BookOpen, Pen } from 'lucide-react'
 import Link from 'next/link'
 import SignaturePreview from '@/components/SignaturePreview'
 import { SignatureData, generateSignatureHTMLSync } from '@/lib/signature-export'
-import QRCode from 'qrcode'
 
 const schema = z.object({
   company: z.enum(['raederlogistik', 'reifen-gerlach']),
@@ -26,16 +25,10 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
-const COMPANY_WEBSITES: Record<string, string> = {
-  'raederlogistik': 'https://www.raederlogistik.de/',
-  'reifen-gerlach': 'https://www.raederlogistik.de/',
-}
-
 export default function SignaturenPage() {
   const [activeTab, setActiveTab] = useState<'generator' | 'anleitung'>('generator')
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
@@ -75,24 +68,6 @@ export default function SignaturenPage() {
     photoUrl: formValues.photoUrl || undefined,
   }
 
-  const websiteUrl = signatureData.website || COMPANY_WEBSITES[signatureData.company]
-
-  useEffect(() => {
-    let cancelled = false
-    QRCode.toDataURL(websiteUrl, {
-      width: 80,
-      margin: 1,
-      color: { dark: '#1a1a1a', light: '#ffffff' },
-    }).then((url) => {
-      if (!cancelled) setQrCodeDataUrl(url)
-    }).catch(() => {
-      if (!cancelled) setQrCodeDataUrl(
-        `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(websiteUrl)}`
-      )
-    })
-    return () => { cancelled = true }
-  }, [websiteUrl])
-
   const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -104,13 +79,12 @@ export default function SignaturenPage() {
   }, [setValue])
 
   const handleCopyHTML = useCallback(async () => {
-    const html = generateSignatureHTMLSync(signatureData, qrCodeDataUrl, window.location.origin)
+    const html = generateSignatureHTMLSync(signatureData, '', window.location.origin)
     try {
       await navigator.clipboard.writeText(html)
       setCopied(true)
       setTimeout(() => setCopied(false), 3000)
     } catch {
-      // fallback
       const ta = document.createElement('textarea')
       ta.value = html
       document.body.appendChild(ta)
@@ -120,7 +94,7 @@ export default function SignaturenPage() {
       setCopied(true)
       setTimeout(() => setCopied(false), 3000)
     }
-  }, [signatureData, qrCodeDataUrl])
+  }, [signatureData])
 
   const handleSave = useCallback(async (data: FormValues) => {
     try {
@@ -138,11 +112,13 @@ export default function SignaturenPage() {
     }
   }, [])
 
+  const inputClass = "w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
+
   return (
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
       <div className="bg-[#1a1a1a] border-b-4 border-[#DCFF0C]">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <div>
             <h1 className="text-white text-2xl font-bold tracking-tight">E-Mail Signatur Generator</h1>
             <p className="text-zinc-400 text-sm mt-0.5">Erstelle deine professionelle E-Mail-Signatur</p>
@@ -152,13 +128,13 @@ export default function SignaturenPage() {
             className="flex items-center gap-2 text-[#DCFF0C] text-sm font-medium border border-[#DCFF0C]/40 px-4 py-2 rounded-lg hover:bg-[#DCFF0C]/10 transition-colors"
           >
             <BookOpen size={16} />
-            Anleitung: Signatur in Outlook einrichten
+            Outlook-Anleitung
           </Link>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-6 pt-6">
+      <div className="max-w-6xl mx-auto px-6 pt-6">
         <div className="flex gap-1 bg-white border border-zinc-200 rounded-xl p-1 w-fit shadow-sm">
           {([
             { id: 'generator', label: 'Generator', icon: Pen },
@@ -188,58 +164,68 @@ export default function SignaturenPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="max-w-7xl mx-auto px-6 py-6"
+            className="max-w-6xl mx-auto px-6 py-6 space-y-6"
           >
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-              {/* Form */}
-              <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-3">
-                  <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
-                  <h2 className="font-semibold text-zinc-800">Deine Daten</h2>
-                </div>
-                <form onSubmit={handleSubmit(handleSave)} className="p-6 space-y-5">
+            {/* Form */}
+            <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-3">
+                <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
+                <h2 className="font-semibold text-zinc-800">Deine Daten</h2>
+              </div>
+              <form onSubmit={handleSubmit(handleSave)} className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {/* Company */}
-                  <div>
+                  <div className="lg:col-span-2">
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">
                       Firma <span className="text-red-500">*</span>
                     </label>
-                    <select
-                      {...register('company')}
-                      className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
-                    >
+                    <select {...register('company')} className={inputClass}>
                       <option value="raederlogistik">Räderlogistik Franchise GmbH</option>
                       <option value="reifen-gerlach">Reifen Gerlach GmbH</option>
                     </select>
                   </div>
 
-                  {/* Name Row */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                        Vorname <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        {...register('firstName')}
-                        placeholder="Max"
-                        className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
-                      />
-                      {errors.firstName && (
-                        <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                        Nachname <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        {...register('lastName')}
-                        placeholder="Mustermann"
-                        className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
-                      />
-                      {errors.lastName && (
-                        <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>
-                      )}
-                    </div>
+                  {/* Photo */}
+                  <div className="row-span-2">
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                      Foto <span className="text-zinc-400 font-normal">(optional)</span>
+                    </label>
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                    {formValues.photoUrl ? (
+                      <div className="flex flex-col items-center gap-3 p-4 bg-zinc-50 border border-zinc-200 rounded-lg h-[104px] justify-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={formValues.photoUrl} alt="Vorschau" className="w-14 h-14 rounded-full object-cover border-2 border-[#DCFF0C]" />
+                        <button type="button" onClick={() => { setValue('photoUrl', ''); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                          className="text-xs text-zinc-400 hover:text-red-500 flex items-center gap-1 transition-colors">
+                          <X size={12} /> Entfernen
+                        </button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => fileInputRef.current?.click()}
+                        className="w-full h-[104px] flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-200 rounded-lg text-sm text-zinc-500 hover:border-[#DCFF0C]/50 hover:text-zinc-700 transition-all">
+                        <Upload size={18} />
+                        <span>Foto hochladen</span>
+                        <span className="text-xs text-zinc-400">JPG, PNG</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Vorname */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                      Vorname <span className="text-red-500">*</span>
+                    </label>
+                    <input {...register('firstName')} placeholder="Max" className={inputClass} />
+                    {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
+                  </div>
+
+                  {/* Nachname */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                      Nachname <span className="text-red-500">*</span>
+                    </label>
+                    <input {...register('lastName')} placeholder="Mustermann" className={inputClass} />
+                    {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
                   </div>
 
                   {/* Position */}
@@ -247,60 +233,35 @@ export default function SignaturenPage() {
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">
                       Position <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      {...register('position')}
-                      placeholder="Vertriebsleiter"
-                      className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
-                    />
-                    {errors.position && (
-                      <p className="text-red-500 text-xs mt-1">{errors.position.message}</p>
-                    )}
+                    <input {...register('position')} placeholder="Vertriebsleiter" className={inputClass} />
+                    {errors.position && <p className="text-red-500 text-xs mt-1">{errors.position.message}</p>}
                   </div>
 
-                  {/* Phone + Mobile */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Telefon</label>
-                      <input
-                        {...register('phone')}
-                        placeholder="+49 2103 123456"
-                        className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Mobil</label>
-                      <input
-                        {...register('mobile')}
-                        placeholder="+49 170 1234567"
-                        className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
-                      />
-                    </div>
+                  {/* Telefon */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Telefon</label>
+                    <input {...register('phone')} placeholder="+49 2103 123456" className={inputClass} />
+                  </div>
+
+                  {/* Mobil */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Mobil</label>
+                    <input {...register('mobile')} placeholder="+49 170 1234567" className={inputClass} />
                   </div>
 
                   {/* Fax */}
                   <div>
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">Fax</label>
-                    <input
-                      {...register('fax')}
-                      placeholder="+49 2103 123457"
-                      className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
-                    />
+                    <input {...register('fax')} placeholder="+49 2103 123457" className={inputClass} />
                   </div>
 
-                  {/* Email */}
+                  {/* E-Mail */}
                   <div>
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">
                       E-Mail <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      {...register('email')}
-                      type="email"
-                      placeholder="m.mustermann@raederlogistik.de"
-                      className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
-                    />
-                    {errors.email && (
-                      <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
-                    )}
+                    <input {...register('email')} type="email" placeholder="m.mustermann@raederlogistik.de" className={inputClass} />
+                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                   </div>
 
                   {/* Website */}
@@ -308,143 +269,96 @@ export default function SignaturenPage() {
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">
                       Website <span className="text-zinc-400 font-normal">(optional)</span>
                     </label>
-                    <input
-                      {...register('website')}
-                      type="url"
-                      placeholder="https://www.raederlogistik.de/"
-                      className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
-                    />
-                    {errors.website && (
-                      <p className="text-red-500 text-xs mt-1">{errors.website.message}</p>
-                    )}
+                    <input {...register('website')} type="url" placeholder="https://www.raederlogistik.de/" className={inputClass} />
+                    {errors.website && <p className="text-red-500 text-xs mt-1">{errors.website.message}</p>}
                   </div>
+                </div>
 
-                  {/* Photo Upload */}
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Foto <span className="text-zinc-400 font-normal">(optional)</span>
-                    </label>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                    {formValues.photoUrl ? (
-                      <div className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-200 rounded-lg">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={formValues.photoUrl}
-                          alt="Vorschau"
-                          className="w-12 h-12 rounded-full object-cover border-2 border-[#DCFF0C]"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm text-zinc-700 font-medium">Foto hochgeladen</p>
-                          <p className="text-xs text-zinc-400">Wird als Kreis-Bild angezeigt</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => { setValue('photoUrl', ''); if (fileInputRef.current) fileInputRef.current.value = '' }}
-                          className="p-1.5 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-zinc-200 rounded-lg py-4 text-sm text-zinc-500 hover:border-[#DCFF0C]/50 hover:text-zinc-700 hover:bg-zinc-50/80 transition-all"
-                      >
-                        <Upload size={16} />
-                        Foto hochladen (JPG, PNG)
-                      </button>
-                    )}
-                  </div>
+                <div className="mt-5 pt-5 border-t border-zinc-100">
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 text-white text-sm font-medium rounded-lg hover:bg-zinc-700 transition-colors"
+                  >
+                    {saved ? <Check size={15} className="text-[#DCFF0C]" /> : <Save size={15} />}
+                    {saved ? 'Gespeichert!' : 'In Datenbank speichern'}
+                  </button>
+                </div>
+              </form>
+            </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-3 pt-2">
-                    <button
-                      type="submit"
-                      className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 text-white text-sm font-medium rounded-lg hover:bg-zinc-700 transition-colors"
-                    >
-                      {saved ? <Check size={15} className="text-[#DCFF0C]" /> : <Save size={15} />}
-                      {saved ? 'Gespeichert!' : 'In Datenbank speichern'}
-                    </button>
-                  </div>
-                </form>
+            {/* E-Mail Vorschau */}
+            <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
+                  <h2 className="font-semibold text-zinc-800">Vorschau</h2>
+                </div>
+                <span className="text-xs text-zinc-400 bg-zinc-50 px-3 py-1 rounded-full border border-zinc-100">
+                  Live-Vorschau
+                </span>
               </div>
 
-              {/* Preview + Export */}
-              <div className="space-y-6">
-                {/* Preview */}
-                <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-                  <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
-                      <h2 className="font-semibold text-zinc-800">Vorschau</h2>
+              {/* Fake E-Mail Client */}
+              <div className="bg-zinc-100 p-4">
+                <div className="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
+                  {/* E-Mail Header */}
+                  <div className="border-b border-zinc-100 px-5 py-4 space-y-2">
+                    <div className="flex gap-3 text-sm">
+                      <span className="text-zinc-400 w-14 shrink-0">Von</span>
+                      <span className="text-zinc-700 font-medium">
+                        {(formValues.firstName || 'Vorname') + ' ' + (formValues.lastName || 'Nachname')}
+                        {formValues.email ? ` <${formValues.email}>` : ' <email@beispiel.de>'}
+                      </span>
                     </div>
-                    <span className="text-xs text-zinc-400 bg-zinc-50 px-3 py-1 rounded-full border border-zinc-100">
-                      Live-Vorschau
-                    </span>
-                  </div>
-                  <div className="p-6 overflow-x-auto">
-                    <div style={{ minWidth: 600 }}>
-                      <SignaturePreview data={signatureData} qrCodeDataUrl={qrCodeDataUrl} />
+                    <div className="flex gap-3 text-sm">
+                      <span className="text-zinc-400 w-14 shrink-0">An</span>
+                      <span className="text-zinc-500">empfaenger@beispiel.de</span>
+                    </div>
+                    <div className="flex gap-3 text-sm">
+                      <span className="text-zinc-400 w-14 shrink-0">Betreff</span>
+                      <span className="text-zinc-700">Ihre Anfrage</span>
                     </div>
                   </div>
-                </div>
 
-                {/* Export */}
-                <div className="bg-[#1a1a1a] rounded-2xl border border-zinc-700 shadow-sm overflow-hidden">
-                  <div className="px-6 py-4 border-b border-zinc-700 flex items-center gap-3">
-                    <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
-                    <h2 className="font-semibold text-white">Export für Outlook</h2>
-                  </div>
-                  <div className="p-6 space-y-4">
-                    <p className="text-zinc-400 text-sm leading-relaxed">
-                      Kopiere den HTML-Code und füge ihn direkt in Outlook als Signatur ein.
-                      Der Code ist vollständig Outlook-kompatibel (Windows &amp; Mac).
+                  {/* E-Mail Body */}
+                  <div className="px-5 py-5">
+                    <p className="text-sm text-zinc-600 mb-6">
+                      Sehr geehrte Damen und Herren,<br /><br />
+                      vielen Dank für Ihre Nachricht. Wir melden uns schnellstmöglich bei Ihnen.
                     </p>
-                    <button
-                      onClick={handleCopyHTML}
-                      className="w-full flex items-center justify-center gap-2 bg-[#DCFF0C] text-[#1a1a1a] font-semibold py-3 px-6 rounded-xl text-sm hover:bg-[#c9eb0b] active:scale-[0.98] transition-all"
-                    >
-                      <AnimatePresence mode="wait">
-                        {copied ? (
-                          <motion.span
-                            key="check"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            exit={{ scale: 0 }}
-                            className="flex items-center gap-2"
-                          >
-                            <Check size={16} />
-                            HTML-Code kopiert!
-                          </motion.span>
-                        ) : (
-                          <motion.span
-                            key="copy"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            exit={{ scale: 0 }}
-                            className="flex items-center gap-2"
-                          >
-                            <Copy size={16} />
-                            HTML-Code kopieren
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </button>
-                    <p className="text-zinc-600 text-xs text-center">
-                      Danach:{' '}
-                      <Link href="/signaturen/anleitung" className="text-[#DCFF0C] hover:underline">
-                        Anleitung lesen &rarr;
-                      </Link>
-                    </p>
+
+                    {/* Divider */}
+                    <div className="border-t border-zinc-200 pt-5">
+                      <SignaturePreview data={signatureData} />
+                    </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Export */}
+              <div className="px-6 py-5 border-t border-zinc-100 flex items-center justify-between gap-4 flex-wrap">
+                <p className="text-sm text-zinc-500">
+                  HTML-Code kopieren und direkt in Outlook als Signatur einfügen.
+                  <Link href="/signaturen/anleitung" className="text-zinc-800 font-medium ml-1 hover:underline">
+                    Anleitung →
+                  </Link>
+                </p>
+                <button
+                  onClick={handleCopyHTML}
+                  className="flex items-center gap-2 bg-[#DCFF0C] text-[#1a1a1a] font-semibold py-2.5 px-6 rounded-xl text-sm hover:bg-[#c9eb0b] active:scale-[0.98] transition-all whitespace-nowrap"
+                >
+                  <AnimatePresence mode="wait">
+                    {copied ? (
+                      <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
+                        <Check size={16} /> HTML kopiert!
+                      </motion.span>
+                    ) : (
+                      <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
+                        <Copy size={16} /> HTML-Code kopieren
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </button>
               </div>
             </div>
           </motion.div>
@@ -470,7 +384,6 @@ export default function SignaturenPage() {
 function AnleitungContent() {
   return (
     <div className="space-y-8">
-      {/* Windows */}
       <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 bg-[#1a1a1a] flex items-center gap-3">
           <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
@@ -481,14 +394,12 @@ function AnleitungContent() {
             { step: 1, title: 'Optionen öffnen', desc: 'Klicke in Outlook auf Datei → Optionen.' },
             { step: 2, title: 'E-Mail-Einstellungen', desc: 'Wähle in der linken Leiste den Punkt „E-Mail".' },
             { step: 3, title: 'Signaturen verwalten', desc: 'Klicke auf die Schaltfläche „Signaturen…".' },
-            { step: 4, title: 'Neue Signatur erstellen', desc: 'Klicke auf „Neu", vergib einen Namen (z. B. „Reifen Gerlach") und bestätige mit OK.' },
-            { step: 5, title: 'HTML-Code einfügen', desc: 'Klicke mit der rechten Maustaste in das Signatur-Textfeld und wähle „Quellcode anzeigen" – ODER wechsle unten rechts zu „HTML". Füge nun den kopierten HTML-Code mit Strg+V ein.' },
-            { step: 6, title: 'Speichern', desc: 'Klicke auf OK und schließe alle Dialogfelder. Die Signatur steht ab sofort zur Verfügung.' },
+            { step: 4, title: 'Neue Signatur erstellen', desc: 'Klicke auf „Neu", vergib einen Namen und bestätige mit OK.' },
+            { step: 5, title: 'HTML-Code einfügen', desc: 'Klicke mit der rechten Maustaste in das Signatur-Textfeld → „Quellcode anzeigen". Füge den kopierten HTML-Code ein.' },
+            { step: 6, title: 'Speichern', desc: 'Klicke auf OK und schließe alle Dialogfelder.' },
           ].map(({ step, title, desc }) => (
             <li key={step} className="flex gap-5 px-6 py-4">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-sm mt-0.5">
-                {step}
-              </span>
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-sm mt-0.5">{step}</span>
               <div>
                 <p className="font-semibold text-zinc-800 text-sm">{title}</p>
                 <p className="text-zinc-500 text-sm mt-0.5">{desc}</p>
@@ -498,7 +409,6 @@ function AnleitungContent() {
         </ol>
       </div>
 
-      {/* Mac */}
       <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 bg-[#1a1a1a] flex items-center gap-3">
           <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
@@ -509,14 +419,12 @@ function AnleitungContent() {
             { step: 1, title: 'Einstellungen öffnen', desc: 'Klicke in der Menüleiste auf Outlook → Einstellungen (⌘,).' },
             { step: 2, title: 'Signaturen aufrufen', desc: 'Klicke im Abschnitt „E-Mail" auf „Signaturen".' },
             { step: 3, title: 'Neue Signatur anlegen', desc: 'Klicke unten links auf das „+"-Symbol.' },
-            { step: 4, title: 'Name vergeben', desc: 'Gib der Signatur einen Namen, z. B. „Meine Signatur".' },
-            { step: 5, title: 'HTML-Code einfügen', desc: 'Klicke in das Bearbeitungsfeld der Signatur. Wähle in der Menüleiste Bearbeiten → Als HTML einfügen und füge den kopierten Code ein.' },
-            { step: 6, title: 'Speichern & schließen', desc: 'Klicke auf „Speichern" und schließe den Dialog. Wähle die neue Signatur als Standard, wenn gewünscht.' },
+            { step: 4, title: 'Name vergeben', desc: 'Gib der Signatur einen Namen.' },
+            { step: 5, title: 'HTML-Code einfügen', desc: 'Klicke in das Bearbeitungsfeld → Bearbeiten → Als HTML einfügen.' },
+            { step: 6, title: 'Speichern & schließen', desc: 'Klicke auf „Speichern" und schließe den Dialog.' },
           ].map(({ step, title, desc }) => (
             <li key={step} className="flex gap-5 px-6 py-4">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-sm mt-0.5">
-                {step}
-              </span>
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-sm mt-0.5">{step}</span>
               <div>
                 <p className="font-semibold text-zinc-800 text-sm">{title}</p>
                 <p className="text-zinc-500 text-sm mt-0.5">{desc}</p>
@@ -524,44 +432,6 @@ function AnleitungContent() {
             </li>
           ))}
         </ol>
-      </div>
-
-      {/* Tips */}
-      <div className="bg-[#DCFF0C]/10 border border-[#DCFF0C]/30 rounded-2xl p-6 space-y-3">
-        <h3 className="font-semibold text-zinc-800 flex items-center gap-2">
-          <span className="text-[#DCFF0C] text-lg">&#9888;</span>
-          Tipps &amp; Hinweise
-        </h3>
-        <ul className="space-y-2 text-sm text-zinc-600">
-          <li className="flex gap-2">
-            <span className="text-[#DCFF0C] font-bold mt-0.5">→</span>
-            <span>
-              <strong>HTML-Datei speichern:</strong> Speichere den HTML-Code als .htm-Datei (z. B. signatur.htm) auf deinem Desktop. So kannst du sie einfach per Drag &amp; Drop in das Signatur-Feld ziehen – besonders praktisch für Mac.
-            </span>
-          </li>
-          <li className="flex gap-2">
-            <span className="text-[#DCFF0C] font-bold mt-0.5">→</span>
-            <span>
-              <strong>Bilder:</strong> Das Logo und das Profilfoto werden direkt als URL eingebunden. Stelle sicher, dass du eine aktive Internetverbindung hast, damit die Bilder angezeigt werden.
-            </span>
-          </li>
-          <li className="flex gap-2">
-            <span className="text-[#DCFF0C] font-bold mt-0.5">→</span>
-            <span>
-              <strong>Outlook 365 (neu):</strong> In der neuesten Version von Outlook 365 (New Outlook) findest du die Signaturen unter Einstellungen → E-Mail → Verfassen und Antworten → E-Mail-Signatur.
-            </span>
-          </li>
-          <li className="flex gap-2">
-            <span className="text-[#DCFF0C] font-bold mt-0.5">→</span>
-            <span>
-              <strong>Probleme?</strong> Wende dich an den IT-Support oder schreibe an{' '}
-              <a href="mailto:it@raederlogistik.de" className="text-zinc-800 font-medium underline">
-                it@raederlogistik.de
-              </a>
-              .
-            </span>
-          </li>
-        </ul>
       </div>
     </div>
   )

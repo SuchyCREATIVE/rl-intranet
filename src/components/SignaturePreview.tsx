@@ -22,10 +22,9 @@ const COMPANY_CONFIG = {
 
 interface SignaturePreviewProps {
   data: SignatureData
-  qrCodeDataUrl?: string
 }
 
-export default function SignaturePreview({ data, qrCodeDataUrl }: SignaturePreviewProps) {
+export default function SignaturePreview({ data }: SignaturePreviewProps) {
   const company = COMPANY_CONFIG[data.company]
   const websiteUrl = data.website || company.website
 
@@ -33,81 +32,65 @@ export default function SignaturePreview({ data, qrCodeDataUrl }: SignaturePrevi
   useEffect(() => { setMounted(true) }, [])
   if (!mounted) return null
 
-  const qrSrc = qrCodeDataUrl ||
-    `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(websiteUrl)}`
-
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', lineHeight: 1 }}>
       <table
         cellPadding={0}
         cellSpacing={0}
         border={0}
-        width={600}
         style={{
-          width: 600,
-          maxWidth: 600,
-          backgroundColor: '#f5f5f5',
+          width: '100%',
+          maxWidth: 700,
+          backgroundColor: '#f0f0f0',
           fontFamily: 'Arial, sans-serif',
-          borderLeft: '4px solid #DCFF0C',
         }}
       >
         <tbody>
           <tr>
-            {/* Left Column */}
+            {/* Left Column: Photo + Company */}
             <td
-              width={160}
+              width={180}
               valign="top"
               style={{
-                width: 160,
+                width: 180,
                 backgroundColor: '#1a1a1a',
-                padding: '16px 12px',
+                padding: '20px 16px',
                 verticalAlign: 'top',
               }}
             >
-              {/* Photo */}
-              <table cellPadding={0} cellSpacing={0} border={0} style={{ marginBottom: 8 }}>
+              {/* Photo Circle */}
+              <table cellPadding={0} cellSpacing={0} border={0} style={{ marginBottom: 14 }}>
                 <tbody>
                   <tr>
-                    <td style={{ padding: 0 }}>
+                    <td>
                       <div
                         style={{
-                          width: 80,
-                          height: 80,
+                          width: 88,
+                          height: 88,
                           borderRadius: '50%',
                           overflow: 'hidden',
                           border: '3px solid #DCFF0C',
-                          display: 'inline-block',
                           backgroundColor: '#2a2a2a',
+                          display: 'inline-block',
                         }}
                       >
                         {data.photoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={data.photoUrl}
-                            width={80}
-                            height={80}
+                            width={88}
+                            height={88}
                             alt={`${data.firstName} ${data.lastName}`}
-                            style={{
-                              width: 80,
-                              height: 80,
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                              display: 'block',
-                            }}
+                            style={{ width: 88, height: 88, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
                           />
                         ) : (
-                          <table cellPadding={0} cellSpacing={0} border={0} width={80} style={{ height: 80 }}>
+                          <table cellPadding={0} cellSpacing={0} border={0} width={88} style={{ height: 88 }}>
                             <tbody>
                               <tr>
                                 <td
                                   align="center"
                                   valign="middle"
-                                  style={{
-                                    color: '#DCFF0C',
-                                    fontSize: 28,
-                                    fontFamily: 'Arial, sans-serif',
-                                    fontWeight: 'bold',
-                                  }}
+                                  style={{ color: '#DCFF0C', fontSize: 30, fontFamily: 'Arial, sans-serif', fontWeight: 'bold' }}
                                 >
                                   {data.firstName.charAt(0)}{data.lastName.charAt(0)}
                                 </td>
@@ -121,50 +104,34 @@ export default function SignaturePreview({ data, qrCodeDataUrl }: SignaturePrevi
                 </tbody>
               </table>
 
-              {/* Company Banner */}
-              <table cellPadding={0} cellSpacing={0} border={0} width={136}>
+              {/* Company Info */}
+              <table cellPadding={0} cellSpacing={0} border={0} width={148}>
                 <tbody>
                   <tr>
-                    <td style={{ paddingTop: 4, borderTop: '2px solid #DCFF0C' }}>
-                      <span
-                        style={{
-                          fontFamily: 'Arial, sans-serif',
-                          fontSize: 9,
-                          color: '#DCFF0C',
-                          fontWeight: 'bold',
-                          letterSpacing: 1,
-                          textTransform: 'uppercase',
-                          display: 'block',
-                        }}
-                      >
+                    <td style={{ paddingTop: 6, borderTop: '2px solid #DCFF0C' }}>
+                      <span style={{
+                        fontFamily: 'Arial, sans-serif',
+                        fontSize: 9,
+                        color: '#DCFF0C',
+                        fontWeight: 'bold',
+                        letterSpacing: 1,
+                        textTransform: 'uppercase' as const,
+                        display: 'block',
+                      }}>
                         {company.name}
                       </span>
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ paddingTop: 2 }}>
-                      <span
-                        style={{
-                          fontFamily: 'Arial, sans-serif',
-                          fontSize: 9,
-                          color: '#aaaaaa',
-                          display: 'block',
-                        }}
-                      >
+                    <td style={{ paddingTop: 3 }}>
+                      <span style={{ fontFamily: 'Arial, sans-serif', fontSize: 9, color: '#999999', display: 'block' }}>
                         {company.address}
                       </span>
                     </td>
                   </tr>
                   <tr>
                     <td>
-                      <span
-                        style={{
-                          fontFamily: 'Arial, sans-serif',
-                          fontSize: 9,
-                          color: '#aaaaaa',
-                          display: 'block',
-                        }}
-                      >
+                      <span style={{ fontFamily: 'Arial, sans-serif', fontSize: 9, color: '#999999', display: 'block' }}>
                         {company.city}
                       </span>
                     </td>
@@ -173,70 +140,49 @@ export default function SignaturePreview({ data, qrCodeDataUrl }: SignaturePrevi
               </table>
             </td>
 
-            {/* Middle Column */}
+            {/* Middle Column: Contact Info */}
             <td
-              width={300}
               valign="top"
               style={{
-                width: 300,
-                padding: '16px 16px 16px 20px',
+                padding: '20px 24px',
                 verticalAlign: 'top',
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#f0f0f0',
               }}
             >
-              <table cellPadding={0} cellSpacing={0} border={0} width={264}>
+              <table cellPadding={0} cellSpacing={0} border={0} style={{ width: '100%' }}>
                 <tbody>
+                  {/* Name + Position */}
                   <tr>
-                    <td style={{ paddingBottom: 4, borderBottom: '2px solid #DCFF0C' }}>
-                      <strong
-                        style={{
-                          fontFamily: 'Arial, sans-serif',
-                          fontSize: 16,
-                          color: '#1a1a1a',
-                          fontWeight: 'bold',
-                          display: 'block',
-                        }}
-                      >
+                    <td style={{ paddingBottom: 6, borderBottom: '2px solid #DCFF0C' }}>
+                      <strong style={{
+                        fontFamily: 'Arial, sans-serif',
+                        fontSize: 17,
+                        color: '#1a1a1a',
+                        fontWeight: 'bold',
+                        display: 'block',
+                      }}>
                         {data.firstName} {data.lastName}
                       </strong>
-                      <em
-                        style={{
-                          fontFamily: 'Arial, sans-serif',
-                          fontSize: 12,
-                          color: '#555555',
-                          fontStyle: 'italic',
-                          display: 'block',
-                          marginTop: 2,
-                        }}
-                      >
+                      <em style={{
+                        fontFamily: 'Arial, sans-serif',
+                        fontSize: 13,
+                        color: '#555555',
+                        fontStyle: 'italic',
+                        display: 'block',
+                        marginTop: 3,
+                      }}>
                         {data.position}
                       </em>
                     </td>
                   </tr>
-                  <tr>
-                    <td style={{ paddingTop: 8 }} />
-                  </tr>
+                  <tr><td style={{ paddingTop: 10 }} /></tr>
+
+                  {/* Contact rows */}
                   {data.phone && (
                     <tr>
-                      <td
-                        style={{
-                          padding: '1px 0',
-                          fontSize: 12,
-                          color: '#444444',
-                          fontFamily: 'Arial, sans-serif',
-                        }}
-                      >
-                        <span style={{ color: '#DCFF0C', fontSize: 12 }}>&#x260E;</span>
-                        &nbsp;
-                        <a
-                          href={`tel:${data.phone.replace(/\s/g, '')}`}
-                          style={{
-                            color: '#444444',
-                            textDecoration: 'none',
-                            fontFamily: 'Arial, sans-serif',
-                            fontSize: 12,
-                          }}
-                        >
+                      <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
+                        <span style={{ display: 'inline-block', width: 52, color: '#888888', fontSize: 11 }}>Telefon</span>
+                        <a href={`tel:${data.phone.replace(/\s/g, '')}`} style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: 'Arial, sans-serif', fontSize: 12 }}>
                           {data.phone}
                         </a>
                       </td>
@@ -244,25 +190,9 @@ export default function SignaturePreview({ data, qrCodeDataUrl }: SignaturePrevi
                   )}
                   {data.mobile && (
                     <tr>
-                      <td
-                        style={{
-                          padding: '1px 0',
-                          fontSize: 12,
-                          color: '#444444',
-                          fontFamily: 'Arial, sans-serif',
-                        }}
-                      >
-                        <span style={{ color: '#DCFF0C', fontSize: 12 }}>&#x1F4F1;</span>
-                        &nbsp;
-                        <a
-                          href={`tel:${data.mobile.replace(/\s/g, '')}`}
-                          style={{
-                            color: '#444444',
-                            textDecoration: 'none',
-                            fontFamily: 'Arial, sans-serif',
-                            fontSize: 12,
-                          }}
-                        >
+                      <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
+                        <span style={{ display: 'inline-block', width: 52, color: '#888888', fontSize: 11 }}>Mobil</span>
+                        <a href={`tel:${data.mobile.replace(/\s/g, '')}`} style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: 'Arial, sans-serif', fontSize: 12 }}>
                           {data.mobile}
                         </a>
                       </td>
@@ -270,75 +200,50 @@ export default function SignaturePreview({ data, qrCodeDataUrl }: SignaturePrevi
                   )}
                   {data.fax && (
                     <tr>
-                      <td
-                        style={{
-                          padding: '1px 0',
-                          fontSize: 12,
-                          color: '#444444',
-                          fontFamily: 'Arial, sans-serif',
-                        }}
-                      >
-                        <span style={{ color: '#DCFF0C', fontSize: 12 }}>&#x2117;</span>
-                        &nbsp;
-                        <span
-                          style={{
-                            color: '#444444',
-                            fontFamily: 'Arial, sans-serif',
-                            fontSize: 12,
-                          }}
-                        >
-                          {data.fax}
-                        </span>
+                      <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
+                        <span style={{ display: 'inline-block', width: 52, color: '#888888', fontSize: 11 }}>Telefax</span>
+                        <span style={{ color: '#1a1a1a', fontFamily: 'Arial, sans-serif', fontSize: 12 }}>{data.fax}</span>
                       </td>
                     </tr>
                   )}
                   <tr>
-                    <td
-                      style={{
-                        padding: '1px 0',
-                        fontSize: 12,
-                        color: '#444444',
-                        fontFamily: 'Arial, sans-serif',
-                      }}
-                    >
-                      <span style={{ color: '#DCFF0C', fontSize: 12 }}>&#x2709;</span>
-                      &nbsp;
-                      <a
-                        href={`mailto:${data.email}`}
-                        style={{
-                          color: '#1a1a1a',
-                          textDecoration: 'none',
-                          fontFamily: 'Arial, sans-serif',
-                          fontSize: 12,
-                        }}
-                      >
+                    <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
+                      <span style={{ display: 'inline-block', width: 52, color: '#888888', fontSize: 11 }}>Mail</span>
+                      <a href={`mailto:${data.email}`} style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: 'Arial, sans-serif', fontSize: 12 }}>
                         {data.email}
                       </a>
                     </td>
                   </tr>
+
+                  {/* Spacer */}
+                  <tr><td style={{ paddingTop: 10 }} /></tr>
+
+                  {/* Company block */}
                   <tr>
-                    <td
-                      style={{
-                        padding: '1px 0',
-                        fontSize: 12,
-                        color: '#444444',
-                        fontFamily: 'Arial, sans-serif',
-                      }}
-                    >
-                      <span style={{ color: '#DCFF0C', fontSize: 12 }}>&#x1F310;</span>
-                      &nbsp;
-                      <a
-                        href={websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: '#444444',
-                          textDecoration: 'none',
-                          fontFamily: 'Arial, sans-serif',
-                          fontSize: 12,
-                        }}
-                      >
-                        {websiteUrl.replace(/^https?:\/\//, '')}
+                    <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
+                      {company.name}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '1px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
+                      {company.address}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '1px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
+                      {company.city}
+                    </td>
+                  </tr>
+
+                  {/* Spacer */}
+                  <tr><td style={{ paddingTop: 8 }} /></tr>
+
+                  {/* Website */}
+                  <tr>
+                    <td style={{ padding: '1px 0', fontSize: 12, fontFamily: 'Arial, sans-serif' }}>
+                      <a href={websiteUrl} target="_blank" rel="noopener noreferrer"
+                        style={{ color: '#444444', textDecoration: 'none', fontFamily: 'Arial, sans-serif', fontSize: 12, fontStyle: 'italic' }}>
+                        {websiteUrl}
                       </a>
                     </td>
                   </tr>
@@ -346,59 +251,26 @@ export default function SignaturePreview({ data, qrCodeDataUrl }: SignaturePrevi
               </table>
             </td>
 
-            {/* Right Column */}
+            {/* Right Column: Logo only */}
             <td
-              width={136}
+              width={130}
               valign="top"
               style={{
-                width: 136,
-                padding: '16px 12px',
+                width: 130,
+                padding: '20px 16px',
                 verticalAlign: 'top',
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#f0f0f0',
                 textAlign: 'center',
               }}
             >
-              <table cellPadding={0} cellSpacing={0} border={0} width={112} style={{ margin: '0 auto' }}>
-                <tbody>
-                  <tr>
-                    <td align="center" style={{ paddingBottom: 12 }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={company.logo}
-                        width={112}
-                        height={40}
-                        alt={company.name}
-                        style={{ display: 'block', maxWidth: 112, height: 'auto' }}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td align="center">
-                      <a href={websiteUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={qrSrc}
-                          width={80}
-                          height={80}
-                          alt="QR Code"
-                          style={{ display: 'block', margin: '0 auto', border: '3px solid #1a1a1a' }}
-                        />
-                      </a>
-                      <span
-                        style={{
-                          fontFamily: 'Arial, sans-serif',
-                          fontSize: 9,
-                          color: '#888888',
-                          display: 'block',
-                          marginTop: 4,
-                        }}
-                      >
-                        scan me
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={company.logo}
+                width={110}
+                height={40}
+                alt={company.name}
+                style={{ display: 'block', maxWidth: 110, height: 'auto', margin: '0 auto' }}
+              />
             </td>
           </tr>
         </tbody>
