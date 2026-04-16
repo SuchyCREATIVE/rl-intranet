@@ -5,6 +5,8 @@ MODE=${1:-preview}
 PROJECT="rl-intranet"
 SSH_USER="web6"
 SSH_HOST="hosting.suchycreative.de"
+NODE_PATH="/opt/plesk/node/20/bin"
+PM2="/var/www/vhosts/web6.d2-1053.ncsrv.de/.npm-global/bin/pm2"
 
 if [ "$MODE" = "preview" ]; then
   REMOTE_PATH="/var/www/vhosts/web6.d2-1053.ncsrv.de/rl-intranet.scpreview.de/"
@@ -31,8 +33,22 @@ rsync -avz --delete \
   --exclude='*.db-wal' \
   ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}"
 
-echo "▶ PM2 neu starten..."
-ssh "${SSH_USER}@${SSH_HOST}" "cd ${REMOTE_PATH} && npm install --production && pm2 restart ${PROJECT} || pm2 start npm --name ${PROJECT} -- start"
+echo "▶ Server einrichten und PM2 neu starten..."
+ssh "${SSH_USER}@${SSH_HOST}" "
+  export PATH=${NODE_PATH}:\$PATH
+  cd ${REMOTE_PATH}
+
+  # npm install
+  npm install --production 2>&1 | tail -3
+
+  # DB-Tabellen aktualisieren (falls Schema geändert)
+  DATABASE_URL='file:./dev.db' npx prisma db push 2>&1 | tail -3
+
+  # PM2 neu starten
+  ${PM2} restart ${PROJECT} 2>&1 || ${PM2} start npm --name ${PROJECT} -- start 2>&1
+
+  echo 'Server bereit.'
+"
 
 echo ""
 echo "✅ Deployed: $URL"
@@ -43,4 +59,4 @@ cd "$(dirname "$0")"
 git add -A
 git commit -m "deploy($MODE): $(date '+%Y-%m-%d %H:%M')" || echo "(Nichts zu committen)"
 git push
-echo "✅ Git-Push abgeschlossen – du kannst jetzt von jedem Gerät weiterarbeiten"
+echo "✅ Git-Push abgeschlossen"
