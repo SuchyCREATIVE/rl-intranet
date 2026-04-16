@@ -29,6 +29,8 @@ rsync -avz --delete \
   --exclude='*.db' \
   --exclude='*.db-shm' \
   --exclude='*.db-wal' \
+  --exclude='.php-version' \
+  --exclude='.php-ini' \
   ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}"
 
 echo "▶ Build auf Server starten (native modules)..."
