@@ -11,7 +11,7 @@ export default async function IntranetLayout({
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/auth')
   }
 
   const userName = session.user.name || session.user.email?.split('@')[0]
