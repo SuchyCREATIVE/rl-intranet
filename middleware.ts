@@ -11,8 +11,11 @@ function isPublicPath(pathname: string): boolean {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
+  console.log('[MW] pathname:', pathname, 'isPublic:', isPublicPath(pathname))
+
   // Öffentliche Routen durchlassen
   if (isPublicPath(pathname)) {
+    console.log('[MW] PUBLIC - passing through')
     return NextResponse.next()
   }
 
