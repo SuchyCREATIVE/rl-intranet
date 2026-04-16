@@ -24,27 +24,46 @@ interface NavItem {
   adminOnly?: boolean
 }
 
-const navItems: NavItem[] = [
+interface NavGroup {
+  label?: string
+  items: NavItem[]
+}
+
+const navGroups: NavGroup[] = [
   {
-    label: 'Startseite',
-    href: '/dashboard',
-    icon: <Home className="w-5 h-5" />,
+    items: [
+      {
+        label: 'Startseite',
+        href: '/dashboard',
+        icon: <Home className="w-4 h-4" />,
+      },
+    ],
   },
   {
-    label: 'Signaturen',
-    href: '/signaturen',
-    icon: <Mail className="w-5 h-5" />,
+    label: 'Tools',
+    items: [
+      {
+        label: 'Signaturen',
+        href: '/signaturen',
+        icon: <Mail className="w-4 h-4" />,
+      },
+      {
+        label: 'Links',
+        href: '/links',
+        icon: <ExternalLink className="w-4 h-4" />,
+      },
+    ],
   },
   {
-    label: 'Links',
-    href: '/links',
-    icon: <ExternalLink className="w-5 h-5" />,
-  },
-  {
-    label: 'Admin',
-    href: '/admin',
-    icon: <ShieldCheck className="w-5 h-5" />,
-    adminOnly: true,
+    label: 'Administration',
+    items: [
+      {
+        label: 'Admin',
+        href: '/admin',
+        icon: <ShieldCheck className="w-4 h-4" />,
+        adminOnly: true,
+      },
+    ],
   },
 ]
 
@@ -62,14 +81,10 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
 
   const isAdmin = userRole === 'ADMIN' || userRole === 'admin'
 
-  const visibleItems = navItems.filter(
-    (item) => !item.adminOnly || isAdmin
-  )
-
   const handleLogout = async () => {
     setIsLoggingOut(true)
     await signOut({ redirect: false })
-    router.push('/login')
+    router.push('/auth')
   }
 
   const isActive = (href: string) => {
@@ -80,15 +95,15 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 64 : 240 }}
+      animate={{ width: collapsed ? 64 : 220 }}
       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-      className="relative flex flex-col h-full shrink-0 overflow-hidden"
-      style={{ backgroundColor: '#111827' }}
+      className="relative flex flex-col h-full shrink-0 overflow-hidden border-r"
+      style={{ backgroundColor: '#1a1f2e', borderColor: '#252b3b' }}
     >
       {/* Logo Area */}
       <div
-        className="flex items-center justify-between px-4 py-5 border-b"
-        style={{ borderColor: '#1f2937' }}
+        className="flex items-center justify-between px-4 py-4 border-b shrink-0"
+        style={{ borderColor: '#252b3b', minHeight: 56 }}
       >
         <AnimatePresence mode="wait">
           {!collapsed ? (
@@ -103,10 +118,10 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
               <Image
                 src="/logos/raederlogistik-Logo-negativ.svg"
                 alt="Räderlogistik"
-                width={140}
-                height={38}
+                width={130}
+                height={36}
                 priority
-                className="h-8 w-auto"
+                className="h-7 w-auto"
               />
             </motion.div>
           ) : (
@@ -121,9 +136,9 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
               <Image
                 src="/logos/raederlogistik-Logo-Rand-256x256px.png"
                 alt="RL"
-                width={32}
-                height={32}
-                className="w-8 h-8 object-contain"
+                width={28}
+                height={28}
+                className="w-7 h-7 object-contain"
               />
             </motion.div>
           )}
@@ -131,70 +146,100 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 overflow-y-auto overflow-x-hidden">
-        <ul className="space-y-0.5 px-2">
-          {visibleItems.map((item) => {
-            const active = isActive(item.href)
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  className={`
-                    group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium
-                    transition-all duration-150 relative
-                    ${
-                      active
-                        ? 'text-[#DCFF0C] bg-[#1f2937]'
-                        : 'text-gray-400 hover:text-white hover:bg-[#1f2937]'
-                    }
-                  `}
-                >
-                  {/* Active indicator bar */}
-                  {active && (
-                    <motion.div
-                      layoutId="active-nav"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-[#DCFF0C]"
-                      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                    />
-                  )}
+      <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden">
+        {navGroups.map((group, groupIdx) => {
+          const visibleItems = group.items.filter(
+            (item) => !item.adminOnly || isAdmin
+          )
+          if (visibleItems.length === 0) return null
 
-                  {/* Icon */}
-                  <span className={`shrink-0 ${active ? 'text-[#DCFF0C]' : 'text-gray-500 group-hover:text-white'}`}>
-                    {item.icon}
-                  </span>
+          return (
+            <div key={groupIdx} className={groupIdx > 0 ? 'mt-4' : ''}>
+              {/* Group Label */}
+              <AnimatePresence>
+                {!collapsed && group.label && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="px-4 mb-1"
+                  >
+                    <span className="text-[10px] font-semibold uppercase tracking-widest"
+                      style={{ color: '#4b5675' }}>
+                      {group.label}
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                  {/* Label */}
-                  <AnimatePresence>
-                    {!collapsed && (
-                      <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: 'auto' }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden whitespace-nowrap"
+              {/* Items */}
+              <ul className="space-y-0.5 px-2">
+                {visibleItems.map((item) => {
+                  const active = isActive(item.href)
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        title={collapsed ? item.label : undefined}
+                        className={`
+                          group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium
+                          transition-all duration-150 relative
+                          ${active
+                            ? 'text-white bg-[#252b3b]'
+                            : 'text-[#7c8db5] hover:text-white hover:bg-[#252b3b]'
+                          }
+                          ${collapsed ? 'justify-center' : ''}
+                        `}
                       >
-                        {item.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
+                        {/* Active indicator */}
+                        {active && (
+                          <motion.div
+                            layoutId="active-nav"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full"
+                            style={{ backgroundColor: '#DCFF0C' }}
+                            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                          />
+                        )}
+
+                        {/* Icon */}
+                        <span className={`shrink-0 ${active ? 'text-[#DCFF0C]' : 'text-[#4b5675] group-hover:text-white'}`}>
+                          {item.icon}
+                        </span>
+
+                        {/* Label */}
+                        <AnimatePresence>
+                          {!collapsed && (
+                            <motion.span
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: 'auto' }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden whitespace-nowrap"
+                            >
+                              {item.label}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )
+        })}
       </nav>
 
       {/* User + Logout Area */}
-      <div className="border-t px-2 py-3 space-y-1" style={{ borderColor: '#1f2937' }}>
+      <div className="border-t px-2 py-3 space-y-1 shrink-0" style={{ borderColor: '#252b3b' }}>
         {/* User Info */}
         <div
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-            collapsed ? 'justify-center' : ''
-          }`}
+          className={`flex items-center gap-3 px-3 py-2 rounded-md ${collapsed ? 'justify-center' : ''}`}
         >
-          <div className="shrink-0 w-8 h-8 rounded-full bg-[#1f2937] border border-[#374151] flex items-center justify-center">
-            <User className="w-4 h-4 text-gray-400" />
+          <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: '#252b3b', border: '1px solid #374151' }}>
+            <User className="w-3.5 h-3.5 text-[#7c8db5]" />
           </div>
           <AnimatePresence>
             {!collapsed && (
@@ -208,7 +253,7 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
                 <p className="text-sm font-medium text-gray-200 truncate whitespace-nowrap">
                   {userName || 'Benutzer'}
                 </p>
-                <p className="text-xs text-gray-500 truncate whitespace-nowrap">
+                <p className="text-xs truncate whitespace-nowrap" style={{ color: '#4b5675' }}>
                   {userEmail || ''}
                 </p>
               </motion.div>
@@ -222,11 +267,13 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
           disabled={isLoggingOut}
           title={collapsed ? 'Abmelden' : undefined}
           className={`
-            w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
-            text-gray-400 hover:text-red-400 hover:bg-[#1f2937]
+            w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium
             transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed
             ${collapsed ? 'justify-center' : ''}
           `}
+          style={{ color: '#4b5675' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#f87171')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#4b5675')}
         >
           <LogOut className="w-4 h-4 shrink-0" />
           <AnimatePresence>
@@ -248,7 +295,12 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 z-10 w-6 h-6 rounded-full bg-[#374151] border border-[#4b5563] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#4b5563] transition-all duration-150 shadow-lg"
+        className="absolute -right-3 top-16 z-10 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 shadow-lg"
+        style={{
+          backgroundColor: '#252b3b',
+          border: '1px solid #374151',
+          color: '#7c8db5',
+        }}
         aria-label={collapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen'}
       >
         {collapsed ? (

@@ -6,7 +6,7 @@ PROJECT="rl-intranet"
 SSH_USER="web6"
 SSH_HOST="hosting.suchycreative.de"
 NODE_PATH="/opt/plesk/node/20/bin"
-PM2="/var/www/vhosts/web6.d2-1053.ncsrv.de/.npm-global/bin/pm2"
+PM2="/var/www/vhosts/web6.d2-1053.ncsrv.de/.npm-global/lib/node_modules/pm2/bin/pm2"
 
 if [ "$MODE" = "preview" ]; then
   REMOTE_PATH="/var/www/vhosts/web6.d2-1053.ncsrv.de/rl-intranet.scpreview.de/"
