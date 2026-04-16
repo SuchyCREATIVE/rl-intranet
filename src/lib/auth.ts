@@ -38,9 +38,8 @@ export const authConfig: NextAuthConfig = {
         password: { label: 'Passwort', type: 'password' },
       },
       // MINIMAL TEST: Kein Prisma, gibt immer dennis zurück wenn Passwort "password"
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
-        if (String(credentials.password) !== 'password') return null
+      async authorize() {
+        // TEST: Immer erfolgreich, egal was eingegeben wird
         return {
           id: 'test-id',
           email: 'dennis@suchycreative.de',
