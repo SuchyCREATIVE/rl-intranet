@@ -33,18 +33,20 @@ model Settings {
 }
 
 model SignatureTemplate {
-  id          String   @id @default(cuid())
-  name        String?  // Anzeigename / Beschriftung
-  company     String   // "raederlogistik" | "reifen-gerlach"
-  firstName   String
-  lastName    String
-  position    String
-  phone       String?
-  fax         String?
-  mobile      String?
-  email       String
-  website     String?
-  photoUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String?  // Anzeigename / Beschriftung
+  company        String   // "raederlogistik" | "reifen-gerlach"
+  firstName      String
+  lastName       String
+  position       String
+  phone          String?
+  fax            String?
+  mobile         String?
+  email          String
+  website        String?
+  photoUrl       String?
+  bannerUrl      String?  // Optionales Banner-Bild (z.B. Premio)
+  showStandorte  Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

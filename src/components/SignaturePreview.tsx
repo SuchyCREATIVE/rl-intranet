@@ -3,28 +3,44 @@
 import { useEffect, useState } from 'react'
 import { SignatureData } from '@/lib/signature-export'
 
-const COMPANY_CONFIG = {
+export const COMPANY_CONFIG = {
   'raederlogistik': {
-    name: 'Räderlogistik Franchise GmbH',
+    displayName: 'räderlogistik.de',
+    tagline: 'Der Serviceprovider für das Autohaus',
+    subtext: 'c/o Reifen Gerlach GmbH',
+    legalName: 'Räderlogistik Franchise GmbH',
     address: 'Düsseldorfer Straße 64',
     city: '40721 Hilden',
     website: 'https://www.raederlogistik.de/',
     logo: '/logos/raederlogistik-Logo-Rand.svg',
+    ustId: '',  // Wird vom Admin gepflegt
+    legalFooter: 'Räderlogistik Franchise GmbH | Düsseldorfer Straße 64 | 40721 Hilden',
   },
   'reifen-gerlach': {
-    name: 'Reifen Gerlach GmbH',
+    displayName: 'Reifen Gerlach GmbH',
+    tagline: 'Ihr Reifen- und Autoservice',
+    subtext: '',
+    legalName: 'Reifen Gerlach GmbH',
     address: 'Düsseldorfer Straße 64',
     city: '40721 Hilden',
     website: 'https://www.raederlogistik.de/',
     logo: '/logos/raederlogistik-Logo-Gerlach-Rand.svg',
+    ustId: 'DE278645994',
+    legalFooter: 'Reifen Gerlach GmbH | Geschäftsführer: Sven Gerlach und Ingo Grimm | Sitz der Gesellschaft: Hilden | Amtsgericht Düsseldorf HRB66350 | Steuernummer: 135/5759/1668 | USt.-ID: DE278645994',
   },
 }
 
+const NEON = '#EAFF00'
+const GRAY = '#7A7A7A'
+const DARK = '#222222'
+const FONT = "'Roboto', Arial, sans-serif"
+
 interface SignaturePreviewProps {
   data: SignatureData
+  standorte?: string[]
 }
 
-export default function SignaturePreview({ data }: SignaturePreviewProps) {
+export default function SignaturePreview({ data, standorte = [] }: SignaturePreviewProps) {
   const company = COMPANY_CONFIG[data.company]
   const websiteUrl = data.website || company.website
 
@@ -32,247 +48,218 @@ export default function SignaturePreview({ data }: SignaturePreviewProps) {
   useEffect(() => { setMounted(true) }, [])
   if (!mounted) return null
 
+  const citiesLine = standorte.length > 0
+    ? standorte.join(' | ')
+    : 'Augsburg | Dresden | Erkrath | Hamburg | Hermsdorf | Hilden | München | Nürnberg | Offenburg | Paderborn | Rheinberg | Sangerhausen | Steinen | Westerwald'
+
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif', lineHeight: 1 }}>
+    <div style={{ fontFamily: FONT, lineHeight: 1.4, color: DARK }}>
       <table
         cellPadding={0}
         cellSpacing={0}
         border={0}
-        style={{
-          width: '100%',
-          maxWidth: 700,
-          backgroundColor: '#f0f0f0',
-          fontFamily: 'Arial, sans-serif',
-        }}
+        style={{ width: '100%', maxWidth: 600, fontFamily: FONT, borderCollapse: 'collapse' }}
       >
         <tbody>
+
+          {/* ── Row 1: Name + Logo ── */}
           <tr>
-            {/* Left Column: Photo + Company */}
-            <td
-              width={180}
-              valign="top"
-              style={{
-                width: 180,
-                backgroundColor: '#1a1a1a',
-                padding: '20px 16px',
-                verticalAlign: 'top',
-              }}
-            >
-              {/* Photo Circle */}
-              <table cellPadding={0} cellSpacing={0} border={0} style={{ marginBottom: 14 }}>
+            <td style={{ verticalAlign: 'top', paddingBottom: 12 }}>
+              <table cellPadding={0} cellSpacing={0} border={0} style={{ width: '100%' }}>
                 <tbody>
                   <tr>
-                    <td>
-                      <div
-                        style={{
-                          width: 88,
-                          height: 88,
+                    {/* Photo (optional) */}
+                    {data.photoUrl && (
+                      <td width={52} style={{ width: 52, verticalAlign: 'top', paddingRight: 12 }}>
+                        <div style={{
+                          width: 48,
+                          height: 48,
                           borderRadius: '50%',
                           overflow: 'hidden',
-                          border: '3px solid #DCFF0C',
-                          backgroundColor: '#2a2a2a',
+                          border: `2px solid ${NEON}`,
                           display: 'inline-block',
-                        }}
-                      >
-                        {data.photoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
+                        }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={data.photoUrl}
-                            width={88}
-                            height={88}
+                            width={48}
+                            height={48}
                             alt={`${data.firstName} ${data.lastName}`}
-                            style={{ width: 88, height: 88, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+                            style={{ width: 48, height: 48, objectFit: 'cover', display: 'block' }}
                           />
-                        ) : (
-                          <table cellPadding={0} cellSpacing={0} border={0} width={88} style={{ height: 88 }}>
-                            <tbody>
-                              <tr>
-                                <td
-                                  align="center"
-                                  valign="middle"
-                                  style={{ color: '#DCFF0C', fontSize: 30, fontFamily: 'Arial, sans-serif', fontWeight: 'bold' }}
-                                >
-                                  {data.firstName.charAt(0)}{data.lastName.charAt(0)}
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        )}
+                        </div>
+                      </td>
+                    )}
+
+                    {/* Name + Position */}
+                    <td style={{ verticalAlign: 'top' }}>
+                      <div style={{
+                        fontFamily: FONT,
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: DARK,
+                        lineHeight: 1.2,
+                      }}>
+                        {data.firstName} {data.lastName}
+                      </div>
+                      <div style={{
+                        fontFamily: FONT,
+                        fontSize: 13,
+                        color: GRAY,
+                        fontStyle: 'italic',
+                        marginTop: 3,
+                      }}>
+                        {data.position}
                       </div>
                     </td>
-                  </tr>
-                </tbody>
-              </table>
 
-              {/* Company Info */}
-              <table cellPadding={0} cellSpacing={0} border={0} width={148}>
-                <tbody>
-                  <tr>
-                    <td style={{ paddingTop: 6, borderTop: '2px solid #DCFF0C' }}>
-                      <span style={{
-                        fontFamily: 'Arial, sans-serif',
-                        fontSize: 9,
-                        color: '#DCFF0C',
-                        fontWeight: 'bold',
-                        letterSpacing: 1,
-                        textTransform: 'uppercase' as const,
-                        display: 'block',
-                      }}>
-                        {company.name}
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ paddingTop: 3 }}>
-                      <span style={{ fontFamily: 'Arial, sans-serif', fontSize: 9, color: '#999999', display: 'block' }}>
-                        {company.address}
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <span style={{ fontFamily: 'Arial, sans-serif', fontSize: 9, color: '#999999', display: 'block' }}>
-                        {company.city}
-                      </span>
+                    {/* Logo */}
+                    <td width={120} style={{ width: 120, verticalAlign: 'top', textAlign: 'right' }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={company.logo}
+                        width={110}
+                        height={38}
+                        alt={company.legalName}
+                        style={{ display: 'inline-block', maxWidth: 110, height: 'auto' }}
+                      />
                     </td>
                   </tr>
                 </tbody>
               </table>
             </td>
+          </tr>
 
-            {/* Middle Column: Contact Info */}
-            <td
-              valign="top"
-              style={{
-                padding: '20px 24px',
-                verticalAlign: 'top',
-                backgroundColor: '#f0f0f0',
-              }}
-            >
-              <table cellPadding={0} cellSpacing={0} border={0} style={{ width: '100%' }}>
+          {/* ── Divider ── */}
+          <tr>
+            <td style={{ padding: 0 }}>
+              <div style={{ height: 2, backgroundColor: NEON, marginBottom: 10 }} />
+            </td>
+          </tr>
+
+          {/* ── Row 2: Standorte ── */}
+          {data.showStandorte !== false && (
+            <tr>
+              <td style={{ paddingBottom: 10 }}>
+                <div style={{ fontFamily: FONT, fontSize: 11, color: GRAY, lineHeight: 1.5 }}>
+                  <span style={{ fontWeight: 600 }}>Für Sie vor Ort:</span>{' '}
+                  {citiesLine}
+                </div>
+              </td>
+            </tr>
+          )}
+
+          {/* ── Thin divider ── */}
+          <tr>
+            <td style={{ padding: 0 }}>
+              <div style={{ height: 1, backgroundColor: '#e5e5e5', marginBottom: 10 }} />
+            </td>
+          </tr>
+
+          {/* ── Row 3: Contact ── */}
+          <tr>
+            <td style={{ paddingBottom: 10 }}>
+              <table cellPadding={0} cellSpacing={0} border={0}>
                 <tbody>
-                  {/* Name + Position */}
-                  <tr>
-                    <td style={{ paddingBottom: 6, borderBottom: '2px solid #DCFF0C' }}>
-                      <strong style={{
-                        fontFamily: 'Arial, sans-serif',
-                        fontSize: 17,
-                        color: '#1a1a1a',
-                        fontWeight: 'bold',
-                        display: 'block',
-                      }}>
-                        {data.firstName} {data.lastName}
-                      </strong>
-                      <em style={{
-                        fontFamily: 'Arial, sans-serif',
-                        fontSize: 13,
-                        color: '#555555',
-                        fontStyle: 'italic',
-                        display: 'block',
-                        marginTop: 3,
-                      }}>
-                        {data.position}
-                      </em>
-                    </td>
-                  </tr>
-                  <tr><td style={{ paddingTop: 10 }} /></tr>
-
-                  {/* Contact rows */}
                   {data.phone && (
                     <tr>
-                      <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
-                        <span style={{ display: 'inline-block', width: 52, color: '#888888', fontSize: 11 }}>Telefon</span>
-                        <a href={`tel:${data.phone.replace(/\s/g, '')}`} style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: 'Arial, sans-serif', fontSize: 12 }}>
-                          {data.phone}
-                        </a>
+                      <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, paddingBottom: 2, whiteSpace: 'nowrap' }}>Telefon</td>
+                      <td style={{ fontFamily: FONT, fontSize: 12, color: DARK, paddingBottom: 2 }}>
+                        <a href={`tel:${data.phone.replace(/\s/g, '')}`} style={{ color: DARK, textDecoration: 'none' }}>{data.phone}</a>
                       </td>
                     </tr>
                   )}
                   {data.mobile && (
                     <tr>
-                      <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
-                        <span style={{ display: 'inline-block', width: 52, color: '#888888', fontSize: 11 }}>Mobil</span>
-                        <a href={`tel:${data.mobile.replace(/\s/g, '')}`} style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: 'Arial, sans-serif', fontSize: 12 }}>
-                          {data.mobile}
-                        </a>
+                      <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, paddingBottom: 2, whiteSpace: 'nowrap' }}>Mobil</td>
+                      <td style={{ fontFamily: FONT, fontSize: 12, color: DARK, paddingBottom: 2 }}>
+                        <a href={`tel:${data.mobile.replace(/\s/g, '')}`} style={{ color: DARK, textDecoration: 'none' }}>{data.mobile}</a>
                       </td>
                     </tr>
                   )}
                   {data.fax && (
                     <tr>
-                      <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
-                        <span style={{ display: 'inline-block', width: 52, color: '#888888', fontSize: 11 }}>Telefax</span>
-                        <span style={{ color: '#1a1a1a', fontFamily: 'Arial, sans-serif', fontSize: 12 }}>{data.fax}</span>
-                      </td>
+                      <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, paddingBottom: 2, whiteSpace: 'nowrap' }}>Telefax</td>
+                      <td style={{ fontFamily: FONT, fontSize: 12, color: DARK, paddingBottom: 2 }}>{data.fax}</td>
                     </tr>
                   )}
                   <tr>
-                    <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
-                      <span style={{ display: 'inline-block', width: 52, color: '#888888', fontSize: 11 }}>Mail</span>
-                      <a href={`mailto:${data.email}`} style={{ color: '#1a1a1a', textDecoration: 'none', fontFamily: 'Arial, sans-serif', fontSize: 12 }}>
-                        {data.email}
-                      </a>
-                    </td>
-                  </tr>
-
-                  {/* Spacer */}
-                  <tr><td style={{ paddingTop: 10 }} /></tr>
-
-                  {/* Company block */}
-                  <tr>
-                    <td style={{ padding: '2px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
-                      {company.name}
+                    <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, paddingBottom: 2, whiteSpace: 'nowrap' }}>E-Mail</td>
+                    <td style={{ fontFamily: FONT, fontSize: 12, paddingBottom: 2 }}>
+                      <a href={`mailto:${data.email}`} style={{ color: DARK, textDecoration: 'none' }}>{data.email}</a>
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '1px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
-                      {company.address}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '1px 0', fontSize: 12, color: '#444444', fontFamily: 'Arial, sans-serif' }}>
-                      {company.city}
-                    </td>
-                  </tr>
-
-                  {/* Spacer */}
-                  <tr><td style={{ paddingTop: 8 }} /></tr>
-
-                  {/* Website */}
-                  <tr>
-                    <td style={{ padding: '1px 0', fontSize: 12, fontFamily: 'Arial, sans-serif' }}>
+                    <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, whiteSpace: 'nowrap' }}>Web</td>
+                    <td style={{ fontFamily: FONT, fontSize: 12 }}>
                       <a href={websiteUrl} target="_blank" rel="noopener noreferrer"
-                        style={{ color: '#444444', textDecoration: 'none', fontFamily: 'Arial, sans-serif', fontSize: 12, fontStyle: 'italic' }}>
-                        {websiteUrl}
-                      </a>
+                        style={{ color: DARK, textDecoration: 'none', fontStyle: 'italic' }}>{websiteUrl}</a>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </td>
+          </tr>
 
-            {/* Right Column: Logo only */}
-            <td
-              width={130}
-              valign="top"
-              style={{
-                width: 130,
-                padding: '20px 16px',
-                verticalAlign: 'top',
-                backgroundColor: '#f0f0f0',
-                textAlign: 'center',
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={company.logo}
-                width={110}
-                height={40}
-                alt={company.name}
-                style={{ display: 'block', maxWidth: 110, height: 'auto', margin: '0 auto' }}
-              />
+          {/* ── Thin divider ── */}
+          <tr>
+            <td style={{ padding: 0 }}>
+              <div style={{ height: 1, backgroundColor: '#e5e5e5', marginBottom: 10 }} />
             </td>
           </tr>
+
+          {/* ── Row 4: Company info ── */}
+          <tr>
+            <td style={{ paddingBottom: data.bannerUrl ? 12 : 0 }}>
+              <div style={{ fontFamily: FONT, fontSize: 12, color: DARK, fontWeight: 600 }}>{company.displayName}</div>
+              {company.tagline && (
+                <div style={{ fontFamily: FONT, fontSize: 11, color: GRAY }}>{company.tagline}</div>
+              )}
+              {company.subtext && (
+                <div style={{ fontFamily: FONT, fontSize: 11, color: GRAY }}>{company.subtext}</div>
+              )}
+              <div style={{ fontFamily: FONT, fontSize: 11, color: GRAY, marginTop: 2 }}>
+                {company.address} · {company.city}
+              </div>
+            </td>
+          </tr>
+
+          {/* ── Row 5: Banner (optional) ── */}
+          {data.bannerUrl && (
+            <tr>
+              <td style={{ paddingBottom: 0 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={data.bannerUrl}
+                  alt="Banner"
+                  style={{ display: 'block', maxWidth: 600, width: '100%', height: 'auto' }}
+                />
+              </td>
+            </tr>
+          )}
+
+          {/* ── Divider vor Footer ── */}
+          <tr>
+            <td style={{ paddingTop: data.bannerUrl ? 0 : 10 }}>
+              <div style={{ height: 2, backgroundColor: NEON, marginBottom: 8 }} />
+            </td>
+          </tr>
+
+          {/* ── Row 6: Legal Footer ── */}
+          <tr>
+            <td>
+              <div style={{
+                fontFamily: FONT,
+                fontSize: 10,
+                color: GRAY,
+                lineHeight: 1.6,
+              }}>
+                {company.legalFooter}
+                {company.ustId && ` | USt.-ID: ${company.ustId}`}
+              </div>
+            </td>
+          </tr>
+
         </tbody>
       </table>
     </div>
