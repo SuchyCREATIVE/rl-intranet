@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-const PUBLIC_PATHS = ['/login', '/api/auth', '/api/debug-auth']
+const PUBLIC_PATHS = ['/login', '/api/auth']
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path + '/'))
@@ -11,11 +11,8 @@ function isPublicPath(pathname: string): boolean {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  console.log('[MW] pathname:', pathname, 'isPublic:', isPublicPath(pathname))
-
   // Öffentliche Routen durchlassen
   if (isPublicPath(pathname)) {
-    console.log('[MW] PUBLIC - passing through')
     return NextResponse.next()
   }
 

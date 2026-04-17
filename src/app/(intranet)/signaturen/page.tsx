@@ -48,6 +48,70 @@ interface SavedSignature {
   showStandorte?: boolean
 }
 
+interface UploadFieldProps {
+  field: 'photoUrl' | 'bannerUrl'
+  label: string
+  inputRef: React.RefObject<HTMLInputElement | null>
+  value: string
+  isDragging: boolean
+  onDragOver: (e: React.DragEvent) => void
+  onDragLeave: () => void
+  onDrop: (e: React.DragEvent) => void
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onRemove: () => void
+  previewRound?: boolean
+}
+
+function UploadField({
+  field, label, inputRef, value, isDragging,
+  onDragOver, onDragLeave, onDrop, onChange, onRemove,
+  previewRound = false,
+}: UploadFieldProps) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+        {label} <span className="text-zinc-400 font-normal">(optional)</span>
+      </label>
+      <input ref={inputRef} type="file" accept="image/*" onChange={onChange} className="hidden" />
+      {value ? (
+        <div className={`flex ${field === 'bannerUrl' ? 'flex-row' : 'flex-col'} items-center gap-3 p-4 bg-zinc-50 border border-zinc-200 rounded-lg h-[104px] justify-center`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={value}
+            alt="Vorschau"
+            className={`object-cover border-2 border-[#EAFF00] ${previewRound ? 'w-14 h-14 rounded-full' : 'h-14 w-auto max-w-[200px] rounded'}`}
+          />
+          <button
+            type="button"
+            onClick={onRemove}
+            className="text-xs text-zinc-400 hover:text-red-500 flex items-center gap-1 transition-colors"
+          >
+            <X size={12} /> Entfernen
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); onDragOver(e) }}
+          onDragEnter={(e) => { e.preventDefault(); onDragOver(e) }}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          className={`w-full h-[104px] flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg text-sm transition-all ${
+            isDragging
+              ? 'border-[#EAFF00] bg-[#EAFF00]/5 text-zinc-800'
+              : 'border-zinc-200 text-zinc-500 hover:border-[#EAFF00]/50 hover:text-zinc-700'
+          }`}
+        >
+          {field === 'bannerUrl' ? <Image size={18} className={isDragging ? 'text-[#EAFF00]' : ''} /> : <Upload size={18} className={isDragging ? 'text-[#EAFF00]' : ''} />}
+          <span>{isDragging ? 'Datei loslassen' : field === 'bannerUrl' ? 'Banner hochladen' : 'Foto hochladen'}</span>
+          <span className="text-xs text-zinc-400">JPG, PNG · Drag & Drop oder Klick</span>
+        </button>
+      )}
+    </div>
+  )
+}
+
 export default function SignaturenPage() {
   const [activeTab, setActiveTab] = useState<'generator' | 'anleitung'>('generator')
   const [copied, setCopied] = useState(false)
@@ -197,66 +261,6 @@ export default function SignaturenPage() {
   }, [loadSavedSignatures])
 
   const inputClass = "w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#EAFF00]/50 focus:border-zinc-300 transition-all"
-
-  const UploadField = ({
-    field, label, inputRef, value, isDragging,
-    onDragOver, onDragLeave, onDrop, onChange, onRemove,
-    previewRound = false,
-  }: {
-    field: 'photoUrl' | 'bannerUrl'
-    label: string
-    inputRef: React.RefObject<HTMLInputElement | null>
-    value: string
-    isDragging: boolean
-    onDragOver: (e: React.DragEvent) => void
-    onDragLeave: () => void
-    onDrop: (e: React.DragEvent) => void
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    onRemove: () => void
-    previewRound?: boolean
-  }) => (
-    <div>
-      <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-        {label} <span className="text-zinc-400 font-normal">(optional)</span>
-      </label>
-      <input ref={inputRef} type="file" accept="image/*" onChange={onChange} className="hidden" />
-      {value ? (
-        <div className={`flex ${field === 'bannerUrl' ? 'flex-row' : 'flex-col'} items-center gap-3 p-4 bg-zinc-50 border border-zinc-200 rounded-lg h-[104px] justify-center`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={value}
-            alt="Vorschau"
-            className={`object-cover border-2 border-[#EAFF00] ${previewRound ? 'w-14 h-14 rounded-full' : 'h-14 w-auto max-w-[200px] rounded'}`}
-          />
-          <button
-            type="button"
-            onClick={onRemove}
-            className="text-xs text-zinc-400 hover:text-red-500 flex items-center gap-1 transition-colors"
-          >
-            <X size={12} /> Entfernen
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); onDragOver(e) }}
-          onDragEnter={(e) => { e.preventDefault(); onDragOver(e) }}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
-          className={`w-full h-[104px] flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg text-sm transition-all ${
-            isDragging
-              ? 'border-[#EAFF00] bg-[#EAFF00]/5 text-zinc-800'
-              : 'border-zinc-200 text-zinc-500 hover:border-[#EAFF00]/50 hover:text-zinc-700'
-          }`}
-        >
-          {field === 'bannerUrl' ? <Image size={18} className={isDragging ? 'text-[#EAFF00]' : ''} /> : <Upload size={18} className={isDragging ? 'text-[#EAFF00]' : ''} />}
-          <span>{isDragging ? 'Datei loslassen' : field === 'bannerUrl' ? 'Banner hochladen' : 'Foto hochladen'}</span>
-          <span className="text-xs text-zinc-400">JPG, PNG · Drag & Drop oder Klick</span>
-        </button>
-      )}
-    </div>
-  )
 
   return (
     <div className="min-h-screen bg-zinc-50">

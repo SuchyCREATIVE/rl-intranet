@@ -37,14 +37,23 @@ export const authConfig: NextAuthConfig = {
         email: { label: 'E-Mail', type: 'email' },
         password: { label: 'Passwort', type: 'password' },
       },
-      // MINIMAL TEST: Kein Prisma, gibt immer dennis zurück wenn Passwort "password"
-      async authorize() {
-        // TEST: Immer erfolgreich, egal was eingegeben wird
-        return {
-          id: 'test-id',
-          email: 'dennis@suchycreative.de',
-          name: 'Dennis',
-          role: 'admin',
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null
+        const email = credentials.email as string
+        const password = credentials.password as string
+        try {
+          const user = await prisma.user.findUnique({ where: { email } })
+          if (!user || !user.passwordHash) return null
+          const valid = await bcrypt.compare(password, user.passwordHash)
+          if (!valid) return null
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.username,
+            role: user.role,
+          }
+        } catch {
+          return null
         }
       },
     }),
