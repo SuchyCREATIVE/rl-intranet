@@ -12,10 +12,15 @@ const nextConfig: NextConfig = {
       { key: 'Cache-Control', value: 'private, no-cache, no-store, max-age=0, must-revalidate' },
       { key: 'Pragma', value: 'no-cache' },
       { key: 'Expires', value: '0' },
+      // nginx-spezifisch: überschreibt proxy_ignore_headers Cache-Control
+      { key: 'X-Accel-Expires', value: '0' },
     ]
     return [
-      // Alle HTML-Seiten nie cachen (verhindert stale-chunk-Probleme nach Turbopack-Build)
-      { source: '/(.*)', headers: noCache },
+      // Alle Seiten-Routen nie cachen (nicht /_next/static – die haben Content-Hash-Namen)
+      {
+        source: '/((?!_next/static|_next/image|favicon).*)',
+        headers: noCache,
+      },
     ]
   },
 }
