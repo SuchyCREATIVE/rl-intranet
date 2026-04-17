@@ -4,6 +4,10 @@ import fs from "fs";
 import path from "path";
 import "./globals.css";
 
+// CSS wird server-seitig inlined – Layout muss dynamisch gerendert werden,
+// damit die CSS-Datei (aus .next/static/chunks/) zur Laufzeit verfügbar ist.
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
