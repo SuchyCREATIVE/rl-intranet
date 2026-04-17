@@ -17,7 +17,19 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  let session
+  try {
+    session = await auth()
+  } catch (e: unknown) {
+    const err = e as Error
+    return (
+      <div style={{ padding: 32, fontFamily: 'monospace', color: 'red' }}>
+        <h2>auth() Fehler im Admin-Layout</h2>
+        <p><strong>Message:</strong> {err?.message ?? String(e)}</p>
+        <pre style={{ background: '#f0f0f0', padding: 16, overflow: 'auto', fontSize: 12 }}>{err?.stack ?? ''}</pre>
+      </div>
+    )
+  }
 
   if (!session?.user) {
     redirect('/login?callbackUrl=/admin')
