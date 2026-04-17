@@ -3,41 +3,23 @@ import { prisma } from '@/lib/prisma'
 import { Users, Mail, ShieldCheck, ArrowRight, UserCheck, Clock } from 'lucide-react'
 
 async function getStats() {
-  try {
-    const [totalUsers, adminCount, recentUsers] = await Promise.all([
-      prisma.user.count(),
-      prisma.user.count({ where: { role: 'admin' } }),
-      prisma.user.count({
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-          },
+  const [totalUsers, adminCount, recentUsers] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { role: 'admin' } }),
+    prisma.user.count({
+      where: {
+        createdAt: {
+          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         },
-      }),
-    ])
-    return { totalUsers, adminCount, recentUsers }
-  } catch (e: unknown) {
-    console.error('[AdminPage] getStats() FEHLER:', e)
-    throw e
-  }
+      },
+    }),
+  ])
+
+  return { totalUsers, adminCount, recentUsers }
 }
 
 export default async function AdminDashboardPage() {
-  console.log('[AdminPage] render start')
-  let stats
-  try {
-    stats = await getStats()
-    console.log('[AdminPage] stats OK:', stats)
-  } catch (e: unknown) {
-    const err = e as Error
-    return (
-      <div style={{ padding: 32, fontFamily: 'monospace', color: 'red', background: '#fff' }}>
-        <h2>Admin-Page Fehler (getStats)</h2>
-        <p>{err?.message ?? String(e)}</p>
-        <pre style={{ fontSize: 12, background: '#f0f0f0', padding: 16 }}>{err?.stack}</pre>
-      </div>
-    )
-  }
+  const stats = await getStats()
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">

@@ -2,13 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { type LucideIcon } from 'lucide-react'
+import { LayoutDashboard, Users, Mail, Settings, HelpCircle } from 'lucide-react'
 
 interface NavItem {
   href: string
   label: string
-  icon: LucideIcon
+  iconName: 'LayoutDashboard' | 'Users' | 'Mail' | 'Settings' | 'HelpCircle'
   exact?: boolean
+}
+
+const ICONS = {
+  LayoutDashboard,
+  Users,
+  Mail,
+  Settings,
+  HelpCircle,
 }
 
 interface AdminSidebarClientProps {
@@ -27,7 +35,7 @@ export default function AdminSidebarClient({ navItems }: AdminSidebarClientProps
     <ul className="space-y-1">
       {navItems.map((item) => {
         const active = isActive(item)
-        const Icon = item.icon
+        const Icon = ICONS[item.iconName]
         return (
           <li key={item.href}>
             <Link

@@ -1,15 +1,15 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
-import { LayoutDashboard, Users, Mail, Settings, HelpCircle, ShieldCheck } from 'lucide-react'
+import { ShieldCheck } from 'lucide-react'
 import AdminSidebarClient from './AdminSidebarClient'
 
 const adminNavItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/admin/users', label: 'Benutzer', icon: Users },
-  { href: '/admin/email', label: 'E-Mail', icon: Mail },
-  { href: '/admin/settings', label: 'Einstellungen', icon: Settings },
-  { href: '/admin/help', label: 'Hilfe', icon: HelpCircle },
+  { href: '/admin', label: 'Dashboard', iconName: 'LayoutDashboard' as const, exact: true },
+  { href: '/admin/users', label: 'Benutzer', iconName: 'Users' as const },
+  { href: '/admin/email', label: 'E-Mail', iconName: 'Mail' as const },
+  { href: '/admin/settings', label: 'Einstellungen', iconName: 'Settings' as const },
+  { href: '/admin/help', label: 'Hilfe', iconName: 'HelpCircle' as const },
 ]
 
 export default async function AdminLayout({
@@ -17,19 +17,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  let session
-  try {
-    session = await auth()
-  } catch (e: unknown) {
-    const err = e as Error
-    return (
-      <div style={{ padding: 32, fontFamily: 'monospace', color: 'red' }}>
-        <h2>auth() Fehler im Admin-Layout</h2>
-        <p><strong>Message:</strong> {err?.message ?? String(e)}</p>
-        <pre style={{ background: '#f0f0f0', padding: 16, overflow: 'auto', fontSize: 12 }}>{err?.stack ?? ''}</pre>
-      </div>
-    )
-  }
+  const session = await auth()
 
   if (!session?.user) {
     redirect('/login?callbackUrl=/admin')
