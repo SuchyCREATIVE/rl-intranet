@@ -78,7 +78,7 @@ function UploadField({
           <img
             src={value}
             alt="Vorschau"
-            className={`object-cover border-2 border-[#EAFF00] ${previewRound ? 'w-14 h-14 rounded-full' : 'h-14 w-auto max-w-[200px] rounded'}`}
+            className={`object-cover border-2 border-[#DCFF0C] ${previewRound ? 'w-14 h-14 rounded-full' : 'h-14 w-auto max-w-[200px] rounded'}`}
           />
           <button
             type="button"
@@ -98,11 +98,11 @@ function UploadField({
           onDrop={onDrop}
           className={`w-full h-[104px] flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg text-sm transition-all ${
             isDragging
-              ? 'border-[#EAFF00] bg-[#EAFF00]/5 text-zinc-800'
-              : 'border-zinc-200 text-zinc-500 hover:border-[#EAFF00]/50 hover:text-zinc-700'
+              ? 'border-[#DCFF0C] bg-[#DCFF0C]/5 text-zinc-800'
+              : 'border-zinc-200 text-zinc-500 hover:border-[#DCFF0C]/50 hover:text-zinc-700'
           }`}
         >
-          {field === 'bannerUrl' ? <Image size={18} className={isDragging ? 'text-[#EAFF00]' : ''} /> : <Upload size={18} className={isDragging ? 'text-[#EAFF00]' : ''} />}
+          {field === 'bannerUrl' ? <Image size={18} className={isDragging ? 'text-[#DCFF0C]' : ''} /> : <Upload size={18} className={isDragging ? 'text-[#DCFF0C]' : ''} />}
           <span>{isDragging ? 'Datei loslassen' : field === 'bannerUrl' ? 'Banner hochladen' : 'Foto hochladen'}</span>
           <span className="text-xs text-zinc-400">JPG, PNG · Drag & Drop oder Klick</span>
         </button>
@@ -256,12 +256,12 @@ export default function SignaturenPage() {
     }
   }, [loadSavedSignatures])
 
-  const inputClass = "w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#EAFF00]/50 focus:border-zinc-300 transition-all"
+  const inputClass = "w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
 
   return (
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
-      <div className="bg-[#1a1a1a] border-b-4 border-[#EAFF00]">
+      <div className="bg-[#1c1c1c] border-b-4 border-[#DCFF0C]">
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <div>
             <h1 className="text-white text-2xl font-bold tracking-tight">E-Mail Signatur Generator</h1>
@@ -269,7 +269,7 @@ export default function SignaturenPage() {
           </div>
           <Link
             href="/signaturen/anleitung"
-            className="flex items-center gap-2 text-[#EAFF00] text-sm font-medium border border-[#EAFF00]/40 px-4 py-2 rounded-lg hover:bg-[#EAFF00]/10 transition-colors"
+            className="flex items-center gap-2 text-[#DCFF0C] text-sm font-medium border border-[#DCFF0C]/40 px-4 py-2 rounded-lg hover:bg-[#DCFF0C]/10 transition-colors"
           >
             <BookOpen size={16} />
             Outlook-Anleitung
@@ -289,7 +289,7 @@ export default function SignaturenPage() {
               onClick={() => setActiveTab(id)}
               className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeTab === id
-                  ? 'bg-[#1a1a1a] text-[#EAFF00] shadow-sm'
+                  ? 'bg-[#1c1c1c] text-[#DCFF0C] shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-800'
               }`}
             >
@@ -380,7 +380,7 @@ export default function SignaturenPage() {
             {/* Formular */}
             <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-3">
-                <div className="w-2 h-6 rounded-full bg-[#EAFF00]" />
+                <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
                 <h2 className="font-semibold text-zinc-800">Deine Daten</h2>
               </div>
               <form onSubmit={handleSubmit(handleSave)} className="p-6 space-y-6">
@@ -493,7 +493,7 @@ export default function SignaturenPage() {
                     type="submit"
                     className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 text-white text-sm font-medium rounded-lg hover:bg-zinc-700 transition-colors whitespace-nowrap"
                   >
-                    {saved ? <Check size={15} className="text-[#EAFF00]" /> : <Save size={15} />}
+                    {saved ? <Check size={15} className="text-[#DCFF0C]" /> : <Save size={15} />}
                     {saved ? 'Gespeichert!' : 'Signatur speichern'}
                   </button>
                 </div>
@@ -504,7 +504,7 @@ export default function SignaturenPage() {
             <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-6 rounded-full bg-[#EAFF00]" />
+                  <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
                   <h2 className="font-semibold text-zinc-800">Vorschau</h2>
                 </div>
                 <span className="text-xs text-zinc-400 bg-zinc-50 px-3 py-1 rounded-full border border-zinc-100">Live-Vorschau</span>
@@ -554,7 +554,7 @@ export default function SignaturenPage() {
                 </p>
                 <button
                   onClick={handleCopyHTML}
-                  className="flex items-center gap-2 bg-[#EAFF00] text-[#1a1a1a] font-semibold py-2.5 px-6 rounded-xl text-sm hover:bg-[#d4e800] active:scale-[0.98] transition-all whitespace-nowrap"
+                  className="flex items-center gap-2 bg-[#DCFF0C] text-[#1c1c1c] font-semibold py-2.5 px-6 rounded-xl text-sm hover:bg-[#c8ec00] active:scale-[0.98] transition-all whitespace-nowrap"
                 >
                   <AnimatePresence mode="wait">
                     {copied ? (
@@ -618,14 +618,14 @@ function AnleitungContent() {
         },
       ].map(({ title, steps }) => (
         <div key={title} className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 bg-[#1a1a1a] flex items-center gap-3">
-            <div className="w-2 h-6 rounded-full bg-[#EAFF00]" />
+          <div className="px-6 py-4 bg-[#1c1c1c] flex items-center gap-3">
+            <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
             <h2 className="font-semibold text-white">{title}</h2>
           </div>
           <ol className="divide-y divide-zinc-100">
             {steps.map(({ title: t, desc }, i) => (
               <li key={i} className="flex gap-5 px-6 py-4">
-                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#EAFF00] text-[#1a1a1a] flex items-center justify-center font-bold text-sm mt-0.5">{i + 1}</span>
+                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#DCFF0C] text-[#1c1c1c] flex items-center justify-center font-bold text-sm mt-0.5">{i + 1}</span>
                 <div>
                   <p className="font-semibold text-zinc-800 text-sm">{t}</p>
                   <p className="text-zinc-500 text-sm mt-0.5">{desc}</p>

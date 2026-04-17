@@ -11,7 +11,7 @@ export default function AnleitungPage() {
   return (
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
-      <div className="bg-[#1a1a1a] border-b-4 border-[#DCFF0C]">
+      <div className="bg-[#1c1c1c] border-b-4 border-[#DCFF0C]">
         <div className="max-w-4xl mx-auto px-6 py-5 flex items-center gap-4">
           <Link
             href="/signaturen"
@@ -43,7 +43,7 @@ export default function AnleitungPage() {
         {/* Windows */}
         <section>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#1c1c1c] flex items-center justify-center">
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-[#DCFF0C]">
                 <path d="M3 5.557L10.56 4.5v7.245H3V5.557zM3 18.443L10.56 19.5V12.3H3v6.143zM11.44 19.64L21 21V12.3h-9.56v7.34zM11.44 4.36V11.745H21V3L11.44 4.36z" />
               </svg>
@@ -101,7 +101,7 @@ export default function AnleitungPage() {
                 },
               ].map(({ step, title, desc, hint }) => (
                 <li key={step} className="flex gap-5 px-6 py-5">
-                  <span className="flex-shrink-0 w-9 h-9 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-sm mt-0.5 shadow-sm">
+                  <span className="flex-shrink-0 w-9 h-9 rounded-full bg-[#DCFF0C] text-[#1c1c1c] flex items-center justify-center font-bold text-sm mt-0.5 shadow-sm">
                     {step}
                   </span>
                   <div className="space-y-1">
@@ -122,7 +122,7 @@ export default function AnleitungPage() {
         {/* Mac */}
         <section>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#1c1c1c] flex items-center justify-center">
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-[#DCFF0C]">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
               </svg>
@@ -180,7 +180,7 @@ export default function AnleitungPage() {
                 },
               ].map(({ step, title, desc, hint }) => (
                 <li key={step} className="flex gap-5 px-6 py-5">
-                  <span className="flex-shrink-0 w-9 h-9 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-sm mt-0.5 shadow-sm">
+                  <span className="flex-shrink-0 w-9 h-9 rounded-full bg-[#DCFF0C] text-[#1c1c1c] flex items-center justify-center font-bold text-sm mt-0.5 shadow-sm">
                     {step}
                   </span>
                   <div className="space-y-1">
@@ -270,32 +270,32 @@ export default function AnleitungPage() {
           <h3 className="font-semibold text-zinc-800 text-lg">Tipps &amp; Hinweise</h3>
           <ul className="space-y-3 text-sm text-zinc-600">
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-xs mt-0.5">!</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#DCFF0C] text-[#1c1c1c] flex items-center justify-center font-bold text-xs mt-0.5">!</span>
               <div>
                 <strong className="text-zinc-700">HTML-Datei für einfachere Installation:</strong>{' '}
                 Speichere den HTML-Code in einer Textdatei mit der Endung <code className="bg-zinc-100 px-1 py-0.5 rounded text-xs">.htm</code> (z. B. <code className="bg-zinc-100 px-1 py-0.5 rounded text-xs">signatur.htm</code>). Auf dem Mac kannst du diese Datei direkt in das Signatur-Textfeld ziehen.
               </div>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-xs mt-0.5">!</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#DCFF0C] text-[#1c1c1c] flex items-center justify-center font-bold text-xs mt-0.5">!</span>
               <div>
                 <strong className="text-zinc-700">Bilder werden nicht angezeigt?</strong>{' '}
                 Stelle sicher, dass du mit dem Internet verbunden bist. Outlook blockiert manchmal externe Bilder – klicke in diesem Fall auf den Banner „Bilder herunterladen" beim Öffnen einer E-Mail mit deiner Signatur.
               </div>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-xs mt-0.5">!</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#DCFF0C] text-[#1c1c1c] flex items-center justify-center font-bold text-xs mt-0.5">!</span>
               <div>
                 <strong className="text-zinc-700">Signatur sieht falsch aus?</strong>{' '}
                 Überprüfe, ob du den HTML-Code mit „Als HTML einfügen" (Mac) oder im HTML-Modus (Windows) eingefügt hast. Normales Einfügen zeigt den Quellcode als Text an.
               </div>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#DCFF0C] text-[#1a1a1a] flex items-center justify-center font-bold text-xs mt-0.5">!</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#DCFF0C] text-[#1c1c1c] flex items-center justify-center font-bold text-xs mt-0.5">!</span>
               <div>
                 <strong className="text-zinc-700">Support:</strong>{' '}
                 Bei Fragen oder Problemen wende dich bitte an{' '}
-                <a href="mailto:it@raederlogistik.de" className="text-zinc-800 font-medium underline hover:text-[#1a1a1a]">
+                <a href="mailto:it@raederlogistik.de" className="text-zinc-800 font-medium underline hover:text-[#1c1c1c]">
                   it@raederlogistik.de
                 </a>
                 .
@@ -308,7 +308,7 @@ export default function AnleitungPage() {
         <div className="text-center pb-4">
           <Link
             href="/signaturen"
-            className="inline-flex items-center gap-2 bg-[#1a1a1a] text-[#DCFF0C] font-semibold px-8 py-3.5 rounded-xl hover:bg-zinc-800 transition-colors text-sm"
+            className="inline-flex items-center gap-2 bg-[#1c1c1c] text-[#DCFF0C] font-semibold px-8 py-3.5 rounded-xl hover:bg-zinc-800 transition-colors text-sm"
           >
             <ArrowLeft size={16} />
             Zurück zum Signatur-Generator
