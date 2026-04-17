@@ -10,6 +10,7 @@ export interface SignatureData {
   website?: string
   photoUrl?: string
   bannerUrl?: string
+  showStandorte?: boolean
 }
 
 export const COMPANY_CONFIG = {
@@ -29,38 +30,27 @@ export const COMPANY_CONFIG = {
   },
 }
 
-const Y = '#DCFF0C'       // RL-Gelb
-const DB = '#1c1c1c'      // Dunkler Hintergrund links
-const LB = '#efefef'      // Heller Hintergrund Mitte/Rechts
-const TD = '#222222'      // Text dunkel
-const TG = '#666666'      // Text grau
-const F = 'Arial, Helvetica, sans-serif'
+const FALLBACK_STANDORTE = [
+  'Augsburg', 'Dresden', 'Erkrath', 'Hamburg', 'Hermsdorf',
+  'Hilden', 'München', 'Nürnberg', 'Offenburg', 'Paderborn',
+  'Rheinberg', 'Sangerhausen', 'Steinen', 'Westerwald',
+]
 
-export function buildVCard(data: SignatureData, company: typeof COMPANY_CONFIG['raederlogistik']): string {
-  const lines = [
-    'BEGIN:VCARD',
-    'VERSION:3.0',
-    `FN:${data.firstName} ${data.lastName}`,
-    `TITLE:${data.position}`,
-  ]
-  if (data.phone) lines.push(`TEL;TYPE=WORK,VOICE:${data.phone}`)
-  if (data.fax)   lines.push(`TEL;TYPE=FAX:${data.fax}`)
-  if (data.mobile) lines.push(`TEL;TYPE=CELL:${data.mobile}`)
-  lines.push(`EMAIL:${data.email}`)
-  lines.push(`ORG:${company.legalName}`)
-  lines.push(`ADR;TYPE=WORK:;;${company.address};${company.city};;;DE`)
-  lines.push(`URL:${data.website || company.website}`)
-  lines.push('END:VCARD')
-  return lines.join('\n')
-}
+const Y  = '#DCFF0C'       // RL-Gelb
+const DB = '#1c1c1c'       // Dunkler Hintergrund links
+const LB = '#efefef'       // Heller Hintergrund Mitte/Rechts
+const TD = '#222222'       // Text dunkel
+const TG = '#666666'       // Text grau
+const F  = 'Arial, Helvetica, sans-serif'
 
 function buildSignatureHTML(
   data: SignatureData,
   logoSrc: string,
-  qrCodeDataUrl: string,
+  standorte: string[],
 ): string {
   const company = COMPANY_CONFIG[data.company]
   const websiteUrl = data.website || company.website
+  const cities = standorte.length > 0 ? standorte : FALLBACK_STANDORTE
 
   // ── Kontaktzeilen ──────────────────────────────────────────────────────────
   const contactRows: string[] = []
@@ -103,11 +93,15 @@ function buildSignatureHTML(
       </table>`
     : ''
 
-  // ── QR-Code (rechte Spalte) ────────────────────────────────────────────────
-  const qrBlock = qrCodeDataUrl
-    ? `<img src="${qrCodeDataUrl}" width="76" height="76" alt="QR-Code"
-         style="display:block;width:76px;height:76px;margin:10px auto 0;" />
-       <div style="font-family:${F};font-size:9px;color:#999;text-align:center;margin-top:4px;">Visitenkarte</div>`
+  // ── Standorte-Zeile ────────────────────────────────────────────────────────
+  const standorteRow = data.showStandorte !== false
+    ? `<tr>
+        <td colspan="3" style="background-color:${DB};padding:7px 14px;border-top:2px solid ${Y};">
+          <span style="font-family:${F};font-size:11px;color:#aaa;">
+            <strong style="color:${Y};font-weight:600;">Für Sie vor Ort:&nbsp;</strong>${cities.join(' &nbsp;|&nbsp; ')}
+          </span>
+        </td>
+       </tr>`
     : ''
 
   // ── Banner (optional) ──────────────────────────────────────────────────────
@@ -173,7 +167,7 @@ function buildSignatureHTML(
 
       </td>
 
-      <!-- ── Rechte Spalte: Logo + QR ── -->
+      <!-- ── Rechte Spalte: Logo ── -->
       <td width="110" bgcolor="${LB}" valign="top" align="center"
           style="width:110px;background-color:${LB};vertical-align:top;text-align:center;padding:16px 12px 16px 6px;">
 
@@ -181,13 +175,11 @@ function buildSignatureHTML(
         <img src="${logoSrc}" width="90" height="auto" alt="${company.legalName}"
           style="display:block;width:90px;height:auto;margin:0 auto;" />
 
-        <!-- QR-Code -->
-        ${qrBlock}
-
       </td>
 
     </tr>
 
+    ${standorteRow}
     ${bannerRow}
 
   </tbody>
@@ -196,19 +188,19 @@ function buildSignatureHTML(
 
 export function generateSignatureHTMLSync(
   data: SignatureData,
-  qrCodeDataUrl: string,
+  standorte: string[],
   baseUrl?: string,
 ): string {
   const company = COMPANY_CONFIG[data.company]
   const logoPrefix = baseUrl || ''
   const logoSrc = `${logoPrefix}${company.logo}`
-  return buildSignatureHTML(data, logoSrc, qrCodeDataUrl)
+  return buildSignatureHTML(data, logoSrc, standorte)
 }
 
 export async function generateSignatureHTML(
   data: SignatureData,
-  qrCodeDataUrl: string,
+  standorte: string[],
   baseUrl?: string,
 ): Promise<string> {
-  return generateSignatureHTMLSync(data, qrCodeDataUrl, baseUrl)
+  return generateSignatureHTMLSync(data, standorte, baseUrl)
 }

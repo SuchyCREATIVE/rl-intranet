@@ -1,8 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import QRCode from 'qrcode'
-import { SignatureData, COMPANY_CONFIG, buildVCard } from '@/lib/signature-export'
+import { SignatureData, COMPANY_CONFIG } from '@/lib/signature-export'
+
+const FALLBACK_STANDORTE = [
+  'Augsburg', 'Dresden', 'Erkrath', 'Hamburg', 'Hermsdorf',
+  'Hilden', 'München', 'Nürnberg', 'Offenburg', 'Paderborn',
+  'Rheinberg', 'Sangerhausen', 'Steinen', 'Westerwald',
+]
 
 const Y  = '#DCFF0C'
 const DB = '#1c1c1c'
@@ -13,24 +18,16 @@ const F  = 'Arial, Helvetica, sans-serif'
 
 interface SignaturePreviewProps {
   data: SignatureData
+  standorte?: string[]
 }
 
-export default function SignaturePreview({ data }: SignaturePreviewProps) {
+export default function SignaturePreview({ data, standorte = [] }: SignaturePreviewProps) {
   const company = COMPANY_CONFIG[data.company]
   const websiteUrl = data.website || company.website
+  const cities = standorte.length > 0 ? standorte : FALLBACK_STANDORTE
 
   const [mounted, setMounted] = useState(false)
-  const [qrDataUrl, setQrDataUrl] = useState<string>('')
-
   useEffect(() => { setMounted(true) }, [])
-
-  useEffect(() => {
-    const vCard = buildVCard(data, company)
-    QRCode.toDataURL(vCard, { width: 76, margin: 1, color: { dark: '#000000', light: '#efefef' } })
-      .then(setQrDataUrl)
-      .catch(() => {})
-  }, [data, company])
-
   if (!mounted) return null
 
   return (
@@ -45,52 +42,36 @@ export default function SignaturePreview({ data }: SignaturePreviewProps) {
             verticalAlign: 'middle', textAlign: 'center',
             padding: '20px 14px',
           }}>
-            {data.photoUrl ? (
-              <table cellPadding={0} cellSpacing={0} border={0} style={{ margin: '0 auto' }}>
-                <tbody>
-                  <tr>
-                    <td style={{
-                      backgroundColor: Y,
-                      borderRadius: 54,
-                      padding: 3,
-                      lineHeight: 0,
-                      display: 'inline-block',
-                    }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={data.photoUrl}
-                        width={96} height={96}
-                        alt={`${data.firstName} ${data.lastName}`}
-                        style={{
-                          display: 'block', width: 96, height: 96,
-                          borderRadius: '50%', objectFit: 'cover',
-                        }}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            ) : null}
+            {data.photoUrl && (
+              <div style={{
+                display: 'inline-block',
+                backgroundColor: Y,
+                borderRadius: 54,
+                padding: 3,
+                lineHeight: 0,
+              }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={data.photoUrl}
+                  width={96} height={96}
+                  alt={`${data.firstName} ${data.lastName}`}
+                  style={{ display: 'block', width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
+                />
+              </div>
+            )}
           </td>
 
           {/* ── Mittlere Spalte: Kontakt ── */}
           <td style={{
-            backgroundColor: LB,
-            verticalAlign: 'top',
+            backgroundColor: LB, verticalAlign: 'top',
             padding: '18px 18px 18px 20px',
           }}>
             {/* Name */}
-            <div style={{
-              fontFamily: F, fontSize: 16, fontWeight: 'bold',
-              color: TD, lineHeight: 1.2, margin: 0,
-            }}>
+            <div style={{ fontFamily: F, fontSize: 16, fontWeight: 'bold', color: TD, lineHeight: 1.2, margin: 0 }}>
               {data.firstName} {data.lastName}
             </div>
             {/* Position */}
-            <div style={{
-              fontFamily: F, fontSize: 13, fontStyle: 'italic',
-              color: TG, lineHeight: 1.2, margin: '2px 0 0 0',
-            }}>
+            <div style={{ fontFamily: F, fontSize: 13, fontStyle: 'italic', color: TG, lineHeight: 1.2, margin: '2px 0 0 0' }}>
               {data.position}
             </div>
 
@@ -131,15 +112,9 @@ export default function SignaturePreview({ data }: SignaturePreviewProps) {
             {/* Adress-Block */}
             <table cellPadding={0} cellSpacing={0} border={0} style={{ marginTop: 12 }}>
               <tbody>
-                <tr>
-                  <td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 2 }}>{company.legalName}</td>
-                </tr>
-                <tr>
-                  <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingBottom: 2 }}>{company.address}</td>
-                </tr>
-                <tr>
-                  <td style={{ fontFamily: F, fontSize: 12, color: TG }}>{company.city}</td>
-                </tr>
+                <tr><td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 2 }}>{company.legalName}</td></tr>
+                <tr><td style={{ fontFamily: F, fontSize: 12, color: TG, paddingBottom: 2 }}>{company.address}</td></tr>
+                <tr><td style={{ fontFamily: F, fontSize: 12, color: TG }}>{company.city}</td></tr>
               </tbody>
             </table>
 
@@ -150,13 +125,12 @@ export default function SignaturePreview({ data }: SignaturePreviewProps) {
             </div>
           </td>
 
-          {/* ── Rechte Spalte: Logo + QR ── */}
+          {/* ── Rechte Spalte: Logo ── */}
           <td width={110} style={{
             width: 110, backgroundColor: LB,
             verticalAlign: 'top', textAlign: 'center',
             padding: '16px 12px 16px 6px',
           }}>
-            {/* Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={company.logo}
@@ -164,25 +138,25 @@ export default function SignaturePreview({ data }: SignaturePreviewProps) {
               alt={company.legalName}
               style={{ display: 'block', width: 90, height: 'auto', margin: '0 auto' }}
             />
-
-            {/* QR-Code */}
-            {qrDataUrl && (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={qrDataUrl}
-                  width={76} height={76}
-                  alt="QR-Code"
-                  style={{ display: 'block', width: 76, height: 76, margin: '10px auto 0' }}
-                />
-                <div style={{ fontFamily: F, fontSize: 9, color: '#999', textAlign: 'center', marginTop: 4 }}>
-                  Visitenkarte
-                </div>
-              </>
-            )}
           </td>
 
         </tr>
+
+        {/* ── Standorte-Zeile ── */}
+        {data.showStandorte !== false && (
+          <tr>
+            <td colSpan={3} style={{
+              backgroundColor: DB,
+              padding: '7px 14px',
+              borderTop: `2px solid ${Y}`,
+            }}>
+              <span style={{ fontFamily: F, fontSize: 11, color: '#aaa' }}>
+                <strong style={{ color: Y, fontWeight: 600 }}>Für Sie vor Ort:&nbsp;</strong>
+                {cities.join(' \u00a0|\u00a0 ')}
+              </span>
+            </td>
+          </tr>
+        )}
 
         {/* ── Banner (optional) ── */}
         {data.bannerUrl && (
