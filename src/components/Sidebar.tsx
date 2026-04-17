@@ -98,12 +98,12 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
       animate={{ width: collapsed ? 64 : 220 }}
       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
       className="relative flex flex-col h-full shrink-0 overflow-hidden border-r"
-      style={{ backgroundColor: '#1a1f2e', borderColor: '#252b3b' }}
+      style={{ backgroundColor: '#3d4451', borderColor: '#4a5262' }}
     >
       {/* Logo Area */}
       <div
         className="flex items-center justify-between px-4 py-4 border-b shrink-0"
-        style={{ borderColor: '#252b3b', minHeight: 56 }}
+        style={{ borderColor: '#4a5262', minHeight: 56 }}
       >
         <AnimatePresence mode="wait">
           {!collapsed ? (
@@ -166,7 +166,7 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
                     className="px-4 mb-1"
                   >
                     <span className="text-[10px] font-semibold uppercase tracking-widest"
-                      style={{ color: '#4b5675' }}>
+                      style={{ color: '#8b96ae' }}>
                       {group.label}
                     </span>
                   </motion.div>
@@ -186,8 +186,8 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
                           group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium
                           transition-all duration-150 relative
                           ${active
-                            ? 'text-white bg-[#252b3b]'
-                            : 'text-[#7c8db5] hover:text-white hover:bg-[#252b3b]'
+                            ? 'text-white bg-[#4a5262]'
+                            : 'text-[#b2bbd0] hover:text-white hover:bg-[#4a5262]'
                           }
                           ${collapsed ? 'justify-center' : ''}
                         `}
@@ -203,7 +203,7 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
                         )}
 
                         {/* Icon */}
-                        <span className={`shrink-0 ${active ? 'text-[#DCFF0C]' : 'text-[#4b5675] group-hover:text-white'}`}>
+                        <span className={`shrink-0 ${active ? 'text-[#DCFF0C]' : 'text-[#8b96ae] group-hover:text-white'}`}>
                           {item.icon}
                         </span>
 
@@ -232,14 +232,14 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
       </nav>
 
       {/* User + Logout Area */}
-      <div className="border-t px-2 py-3 space-y-1 shrink-0" style={{ borderColor: '#252b3b' }}>
+      <div className="border-t px-2 py-3 space-y-1 shrink-0" style={{ borderColor: '#4a5262' }}>
         {/* User Info */}
         <div
           className={`flex items-center gap-3 px-3 py-2 rounded-md ${collapsed ? 'justify-center' : ''}`}
         >
           <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#252b3b', border: '1px solid #374151' }}>
-            <User className="w-3.5 h-3.5 text-[#7c8db5]" />
+            style={{ backgroundColor: '#4a5262', border: '1px solid #5a6274' }}>
+            <User className="w-3.5 h-3.5 text-[#8b96ae]" />
           </div>
           <AnimatePresence>
             {!collapsed && (
@@ -253,7 +253,7 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
                 <p className="text-sm font-medium text-gray-200 truncate whitespace-nowrap">
                   {userName || 'Benutzer'}
                 </p>
-                <p className="text-xs truncate whitespace-nowrap" style={{ color: '#4b5675' }}>
+                <p className="text-xs truncate whitespace-nowrap" style={{ color: '#8b96ae' }}>
                   {userEmail || ''}
                 </p>
               </motion.div>
@@ -271,9 +271,9 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
             transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed
             ${collapsed ? 'justify-center' : ''}
           `}
-          style={{ color: '#4b5675' }}
+          style={{ color: '#8b96ae' }}
           onMouseEnter={(e) => (e.currentTarget.style.color = '#f87171')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#4b5675')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#8b96ae')}
         >
           <LogOut className="w-4 h-4 shrink-0" />
           <AnimatePresence>
@@ -297,9 +297,9 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
         onClick={() => setCollapsed(!collapsed)}
         className="absolute -right-3 top-16 z-10 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 shadow-lg"
         style={{
-          backgroundColor: '#252b3b',
-          border: '1px solid #374151',
-          color: '#7c8db5',
+          backgroundColor: '#4a5262',
+          border: '1px solid #5a6274',
+          color: '#b2bbd0',
         }}
         aria-label={collapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen'}
       >
