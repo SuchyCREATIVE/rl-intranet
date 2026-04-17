@@ -58,6 +58,10 @@ ssh "${SSH_USER}@${SSH_HOST}" "
   echo '  PM2 neu starten...'
   ${PM2} restart ${PROJECT} 2>&1 || ${PM2} start npm --name ${PROJECT} -- start 2>&1
 
+  echo '  Passenger neu starten (touch tmp/restart.txt)...'
+  mkdir -p ${REMOTE_PATH}/tmp
+  touch ${REMOTE_PATH}/tmp/restart.txt
+
   echo 'Server bereit.'
 "
 
