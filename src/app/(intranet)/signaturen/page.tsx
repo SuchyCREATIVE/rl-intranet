@@ -7,11 +7,12 @@ import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Copy, Check, Upload, X, Save, BookOpen, Pen,
-  Trash2, FolderOpen, ChevronDown, ChevronUp, MapPin, Image,
+  Trash2, FolderOpen, ChevronDown, ChevronUp, Image,
 } from 'lucide-react'
 import Link from 'next/link'
+import QRCode from 'qrcode'
 import SignaturePreview from '@/components/SignaturePreview'
-import { SignatureData, generateSignatureHTMLSync } from '@/lib/signature-export'
+import { SignatureData, COMPANY_CONFIG, buildVCard, generateSignatureHTMLSync } from '@/lib/signature-export'
 
 const schema = z.object({
   name: z.string().optional(),
@@ -26,7 +27,6 @@ const schema = z.object({
   website: z.string().url('Gültige URL erforderlich').optional().or(z.literal('')),
   photoUrl: z.string().optional(),
   bannerUrl: z.string().optional(),
-  showStandorte: z.boolean().optional(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -45,7 +45,6 @@ interface SavedSignature {
   website?: string | null
   photoUrl?: string | null
   bannerUrl?: string | null
-  showStandorte?: boolean
 }
 
 interface UploadFieldProps {
@@ -121,7 +120,6 @@ export default function SignaturenPage() {
   const [savedSignatures, setSavedSignatures] = useState<SavedSignature[]>([])
   const [savedListOpen, setSavedListOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [standorte, setStandorte] = useState<string[]>([])
   const photoInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
 
@@ -147,7 +145,6 @@ export default function SignaturenPage() {
       website: '',
       photoUrl: '',
       bannerUrl: '',
-      showStandorte: true,
     },
   })
 
@@ -165,7 +162,6 @@ export default function SignaturenPage() {
     website: formValues.website || undefined,
     photoUrl: formValues.photoUrl || undefined,
     bannerUrl: formValues.bannerUrl || undefined,
-    showStandorte: formValues.showStandorte,
   }
 
   const loadSavedSignatures = useCallback(async () => {
@@ -177,11 +173,6 @@ export default function SignaturenPage() {
 
   useEffect(() => {
     loadSavedSignatures()
-    // Standorte laden
-    fetch('/api/standorte')
-      .then(r => r.json())
-      .then(d => { if (d.cities) setStandorte(d.cities) })
-      .catch(() => {})
   }, [loadSavedSignatures])
 
   // Foto-Upload
@@ -201,7 +192,13 @@ export default function SignaturenPage() {
   }, [handleFileRead])
 
   const handleCopyHTML = useCallback(async () => {
-    const html = generateSignatureHTMLSync(signatureData, '', window.location.origin, standorte)
+    const company = COMPANY_CONFIG[signatureData.company]
+    const vCard = buildVCard(signatureData, company)
+    let qrCodeDataUrl = ''
+    try {
+      qrCodeDataUrl = await QRCode.toDataURL(vCard, { width: 76, margin: 1 })
+    } catch { /* ignore */ }
+    const html = generateSignatureHTMLSync(signatureData, qrCodeDataUrl, window.location.origin)
     try {
       await navigator.clipboard.writeText(html)
     } catch {
@@ -214,7 +211,7 @@ export default function SignaturenPage() {
     }
     setCopied(true)
     setTimeout(() => setCopied(false), 3000)
-  }, [signatureData, standorte])
+  }, [signatureData])
 
   const handleSave = useCallback(async (data: FormValues) => {
     try {
@@ -246,7 +243,6 @@ export default function SignaturenPage() {
       website: sig.website || '',
       photoUrl: sig.photoUrl || '',
       bannerUrl: sig.bannerUrl || '',
-      showStandorte: sig.showStandorte !== false,
     })
   }, [reset])
 
@@ -389,37 +385,15 @@ export default function SignaturenPage() {
               </div>
               <form onSubmit={handleSubmit(handleSave)} className="p-6 space-y-6">
 
-                {/* Firma + Standorte-Toggle */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Firma <span className="text-red-500">*</span>
-                    </label>
-                    <select {...register('company')} className={inputClass}>
-                      <option value="raederlogistik">Räderlogistik Franchise GmbH</option>
-                      <option value="reifen-gerlach">Reifen Gerlach GmbH</option>
-                    </select>
-                  </div>
-                  <div className="flex items-end pb-0.5">
-                    <label className="flex items-center gap-3 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        {...register('showStandorte')}
-                        className="w-4 h-4 rounded accent-[#EAFF00]"
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-zinc-700 flex items-center gap-1.5">
-                          <MapPin size={14} className="text-zinc-400" />
-                          Standorte anzeigen
-                        </p>
-                        <p className="text-xs text-zinc-400 mt-0.5">
-                          {standorte.length > 0
-                            ? `${standorte.length} Standorte geladen`
-                            : 'Fallback-Liste wird verwendet'}
-                        </p>
-                      </div>
-                    </label>
-                  </div>
+                {/* Firma */}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                    Firma <span className="text-red-500">*</span>
+                  </label>
+                  <select {...register('company')} className={inputClass}>
+                    <option value="raederlogistik">Räderlogistik Franchise GmbH</option>
+                    <option value="reifen-gerlach">Reifen Gerlach GmbH</option>
+                  </select>
                 </div>
 
                 {/* Name + Position */}
@@ -564,7 +538,7 @@ export default function SignaturenPage() {
                       vielen Dank für Ihre Nachricht. Wir melden uns schnellstmöglich bei Ihnen.
                     </p>
                     <div className="border-t border-zinc-200 pt-5">
-                      <SignaturePreview data={signatureData} standorte={standorte} />
+                      <SignaturePreview data={signatureData} />
                     </div>
                   </div>
                 </div>

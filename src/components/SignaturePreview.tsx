@@ -1,267 +1,204 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { SignatureData } from '@/lib/signature-export'
+import QRCode from 'qrcode'
+import { SignatureData, COMPANY_CONFIG, buildVCard } from '@/lib/signature-export'
 
-export const COMPANY_CONFIG = {
-  'raederlogistik': {
-    displayName: 'räderlogistik.de',
-    tagline: 'Der Serviceprovider für das Autohaus',
-    subtext: 'c/o Reifen Gerlach GmbH',
-    legalName: 'Räderlogistik Franchise GmbH',
-    address: 'Düsseldorfer Straße 64',
-    city: '40721 Hilden',
-    website: 'https://www.raederlogistik.de/',
-    logo: '/logos/raederlogistik-Logo-Rand.svg',
-    ustId: '',  // Wird vom Admin gepflegt
-    legalFooter: 'Räderlogistik Franchise GmbH | Düsseldorfer Straße 64 | 40721 Hilden',
-  },
-  'reifen-gerlach': {
-    displayName: 'Reifen Gerlach GmbH',
-    tagline: 'Ihr Reifen- und Autoservice',
-    subtext: '',
-    legalName: 'Reifen Gerlach GmbH',
-    address: 'Düsseldorfer Straße 64',
-    city: '40721 Hilden',
-    website: 'https://www.raederlogistik.de/',
-    logo: '/logos/raederlogistik-Logo-Gerlach-Rand.svg',
-    ustId: 'DE278645994',
-    legalFooter: 'Reifen Gerlach GmbH | Geschäftsführer: Sven Gerlach und Ingo Grimm | Sitz der Gesellschaft: Hilden | Amtsgericht Düsseldorf HRB66350 | Steuernummer: 135/5759/1668 | USt.-ID: DE278645994',
-  },
-}
-
-const NEON = '#EAFF00'
-const GRAY = '#7A7A7A'
-const DARK = '#222222'
-const FONT = "'Roboto', Arial, sans-serif"
+const Y  = '#DCFF0C'
+const DB = '#1c1c1c'
+const LB = '#efefef'
+const TD = '#222222'
+const TG = '#666666'
+const F  = 'Arial, Helvetica, sans-serif'
 
 interface SignaturePreviewProps {
   data: SignatureData
-  standorte?: string[]
 }
 
-export default function SignaturePreview({ data, standorte = [] }: SignaturePreviewProps) {
+export default function SignaturePreview({ data }: SignaturePreviewProps) {
   const company = COMPANY_CONFIG[data.company]
   const websiteUrl = data.website || company.website
 
   const [mounted, setMounted] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState<string>('')
+
   useEffect(() => { setMounted(true) }, [])
+
+  useEffect(() => {
+    const vCard = buildVCard(data, company)
+    QRCode.toDataURL(vCard, { width: 76, margin: 1, color: { dark: '#000000', light: '#efefef' } })
+      .then(setQrDataUrl)
+      .catch(() => {})
+  }, [data, company])
+
   if (!mounted) return null
 
-  const citiesLine = standorte.length > 0
-    ? standorte.join(' | ')
-    : 'Augsburg | Dresden | Erkrath | Hamburg | Hermsdorf | Hilden | München | Nürnberg | Offenburg | Paderborn | Rheinberg | Sangerhausen | Steinen | Westerwald'
-
   return (
-    <div style={{ fontFamily: FONT, lineHeight: 1.4, color: DARK }}>
-      <table
-        cellPadding={0}
-        cellSpacing={0}
-        border={0}
-        style={{ width: '100%', maxWidth: 600, fontFamily: FONT, borderCollapse: 'collapse' }}
-      >
-        <tbody>
+    <table cellPadding={0} cellSpacing={0} border={0} width={600}
+      style={{ maxWidth: 600, width: '100%', borderCollapse: 'collapse', backgroundColor: LB }}>
+      <tbody>
+        <tr>
 
-          {/* ── Row 1: Name + Logo ── */}
-          <tr>
-            <td style={{ verticalAlign: 'top', paddingBottom: 12 }}>
-              <table cellPadding={0} cellSpacing={0} border={0} style={{ width: '100%' }}>
+          {/* ── Linke Spalte: Dunkel + Foto ── */}
+          <td width={155} style={{
+            width: 155, backgroundColor: DB,
+            verticalAlign: 'middle', textAlign: 'center',
+            padding: '20px 14px',
+          }}>
+            {data.photoUrl ? (
+              <table cellPadding={0} cellSpacing={0} border={0} style={{ margin: '0 auto' }}>
                 <tbody>
                   <tr>
-                    {/* Photo (optional) */}
-                    {data.photoUrl && (
-                      <td width={52} style={{ width: 52, verticalAlign: 'top', paddingRight: 12 }}>
-                        <div style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: '50%',
-                          overflow: 'hidden',
-                          border: `2px solid ${NEON}`,
-                          display: 'inline-block',
-                        }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={data.photoUrl}
-                            width={48}
-                            height={48}
-                            alt={`${data.firstName} ${data.lastName}`}
-                            style={{ width: 48, height: 48, objectFit: 'cover', display: 'block' }}
-                          />
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Name + Position */}
-                    <td style={{ verticalAlign: 'top' }}>
-                      <div style={{
-                        fontFamily: FONT,
-                        fontSize: 18,
-                        fontWeight: 700,
-                        color: DARK,
-                        lineHeight: 1.2,
-                      }}>
-                        {data.firstName} {data.lastName}
-                      </div>
-                      <div style={{
-                        fontFamily: FONT,
-                        fontSize: 13,
-                        color: GRAY,
-                        fontStyle: 'italic',
-                        marginTop: 3,
-                      }}>
-                        {data.position}
-                      </div>
-                    </td>
-
-                    {/* Logo */}
-                    <td width={120} style={{ width: 120, verticalAlign: 'top', textAlign: 'right' }}>
+                    <td style={{
+                      backgroundColor: Y,
+                      borderRadius: 54,
+                      padding: 3,
+                      lineHeight: 0,
+                      display: 'inline-block',
+                    }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={company.logo}
-                        width={110}
-                        height={38}
-                        alt={company.legalName}
-                        style={{ display: 'inline-block', maxWidth: 110, height: 'auto' }}
+                        src={data.photoUrl}
+                        width={96} height={96}
+                        alt={`${data.firstName} ${data.lastName}`}
+                        style={{
+                          display: 'block', width: 96, height: 96,
+                          borderRadius: '50%', objectFit: 'cover',
+                        }}
                       />
                     </td>
                   </tr>
                 </tbody>
               </table>
-            </td>
-          </tr>
+            ) : null}
+          </td>
 
-          {/* ── Divider ── */}
-          <tr>
-            <td style={{ padding: 0 }}>
-              <div style={{ height: 2, backgroundColor: NEON, marginBottom: 10 }} />
-            </td>
-          </tr>
+          {/* ── Mittlere Spalte: Kontakt ── */}
+          <td style={{
+            backgroundColor: LB,
+            verticalAlign: 'top',
+            padding: '18px 18px 18px 20px',
+          }}>
+            {/* Name */}
+            <div style={{
+              fontFamily: F, fontSize: 16, fontWeight: 'bold',
+              color: TD, lineHeight: 1.2, margin: 0,
+            }}>
+              {data.firstName} {data.lastName}
+            </div>
+            {/* Position */}
+            <div style={{
+              fontFamily: F, fontSize: 13, fontStyle: 'italic',
+              color: TG, lineHeight: 1.2, margin: '2px 0 0 0',
+            }}>
+              {data.position}
+            </div>
 
-          {/* ── Row 2: Standorte ── */}
-          {data.showStandorte !== false && (
-            <tr>
-              <td style={{ paddingBottom: 10 }}>
-                <div style={{ fontFamily: FONT, fontSize: 11, color: GRAY, lineHeight: 1.5 }}>
-                  <span style={{ fontWeight: 600 }}>Für Sie vor Ort:</span>{' '}
-                  {citiesLine}
-                </div>
-              </td>
-            </tr>
-          )}
-
-          {/* ── Thin divider ── */}
-          <tr>
-            <td style={{ padding: 0 }}>
-              <div style={{ height: 1, backgroundColor: '#e5e5e5', marginBottom: 10 }} />
-            </td>
-          </tr>
-
-          {/* ── Row 3: Contact ── */}
-          <tr>
-            <td style={{ paddingBottom: 10 }}>
-              <table cellPadding={0} cellSpacing={0} border={0}>
-                <tbody>
-                  {data.phone && (
-                    <tr>
-                      <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, paddingBottom: 2, whiteSpace: 'nowrap' }}>Telefon</td>
-                      <td style={{ fontFamily: FONT, fontSize: 12, color: DARK, paddingBottom: 2 }}>
-                        <a href={`tel:${data.phone.replace(/\s/g, '')}`} style={{ color: DARK, textDecoration: 'none' }}>{data.phone}</a>
-                      </td>
-                    </tr>
-                  )}
-                  {data.mobile && (
-                    <tr>
-                      <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, paddingBottom: 2, whiteSpace: 'nowrap' }}>Mobil</td>
-                      <td style={{ fontFamily: FONT, fontSize: 12, color: DARK, paddingBottom: 2 }}>
-                        <a href={`tel:${data.mobile.replace(/\s/g, '')}`} style={{ color: DARK, textDecoration: 'none' }}>{data.mobile}</a>
-                      </td>
-                    </tr>
-                  )}
-                  {data.fax && (
-                    <tr>
-                      <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, paddingBottom: 2, whiteSpace: 'nowrap' }}>Telefax</td>
-                      <td style={{ fontFamily: FONT, fontSize: 12, color: DARK, paddingBottom: 2 }}>{data.fax}</td>
-                    </tr>
-                  )}
+            {/* Kontakt-Tabelle */}
+            <table cellPadding={0} cellSpacing={0} border={0} style={{ marginTop: 12 }}>
+              <tbody>
+                {data.phone && (
                   <tr>
-                    <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, paddingBottom: 2, whiteSpace: 'nowrap' }}>E-Mail</td>
-                    <td style={{ fontFamily: FONT, fontSize: 12, paddingBottom: 2 }}>
-                      <a href={`mailto:${data.email}`} style={{ color: DARK, textDecoration: 'none' }}>{data.email}</a>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 10, paddingBottom: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Telefon</td>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 3 }}>
+                      <a href={`tel:${data.phone.replace(/\s/g, '')}`} style={{ color: TD, textDecoration: 'none' }}>{data.phone}</a>
                     </td>
                   </tr>
+                )}
+                {data.fax && (
                   <tr>
-                    <td style={{ fontFamily: FONT, fontSize: 12, color: GRAY, paddingRight: 8, whiteSpace: 'nowrap' }}>Web</td>
-                    <td style={{ fontFamily: FONT, fontSize: 12 }}>
-                      <a href={websiteUrl} target="_blank" rel="noopener noreferrer"
-                        style={{ color: DARK, textDecoration: 'none', fontStyle: 'italic' }}>{websiteUrl}</a>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 10, paddingBottom: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Telefax</td>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 3 }}>{data.fax}</td>
+                  </tr>
+                )}
+                {data.mobile && (
+                  <tr>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 10, paddingBottom: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Mobil</td>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 3 }}>
+                      <a href={`tel:${data.mobile.replace(/\s/g, '')}`} style={{ color: TD, textDecoration: 'none' }}>{data.mobile}</a>
                     </td>
                   </tr>
-                </tbody>
-              </table>
-            </td>
-          </tr>
+                )}
+                <tr>
+                  <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 10, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Mail</td>
+                  <td style={{ fontFamily: F, fontSize: 12, color: TD }}>
+                    <a href={`mailto:${data.email}`} style={{ color: TD, textDecoration: 'none' }}>{data.email}</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
-          {/* ── Thin divider ── */}
-          <tr>
-            <td style={{ padding: 0 }}>
-              <div style={{ height: 1, backgroundColor: '#e5e5e5', marginBottom: 10 }} />
-            </td>
-          </tr>
+            {/* Adress-Block */}
+            <table cellPadding={0} cellSpacing={0} border={0} style={{ marginTop: 12 }}>
+              <tbody>
+                <tr>
+                  <td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 2 }}>{company.legalName}</td>
+                </tr>
+                <tr>
+                  <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingBottom: 2 }}>{company.address}</td>
+                </tr>
+                <tr>
+                  <td style={{ fontFamily: F, fontSize: 12, color: TG }}>{company.city}</td>
+                </tr>
+              </tbody>
+            </table>
 
-          {/* ── Row 4: Company info ── */}
-          <tr>
-            <td style={{ paddingBottom: data.bannerUrl ? 12 : 0 }}>
-              <div style={{ fontFamily: FONT, fontSize: 12, color: DARK, fontWeight: 600 }}>{company.displayName}</div>
-              {company.tagline && (
-                <div style={{ fontFamily: FONT, fontSize: 11, color: GRAY }}>{company.tagline}</div>
-              )}
-              {company.subtext && (
-                <div style={{ fontFamily: FONT, fontSize: 11, color: GRAY }}>{company.subtext}</div>
-              )}
-              <div style={{ fontFamily: FONT, fontSize: 11, color: GRAY, marginTop: 2 }}>
-                {company.address} · {company.city}
-              </div>
-            </td>
-          </tr>
+            {/* Website */}
+            <div style={{ marginTop: 10, fontFamily: F, fontSize: 12 }}>
+              <a href={websiteUrl} target="_blank" rel="noopener noreferrer"
+                style={{ color: TG, textDecoration: 'none' }}>{websiteUrl}</a>
+            </div>
+          </td>
 
-          {/* ── Row 5: Banner (optional) ── */}
-          {data.bannerUrl && (
-            <tr>
-              <td style={{ paddingBottom: 0 }}>
+          {/* ── Rechte Spalte: Logo + QR ── */}
+          <td width={110} style={{
+            width: 110, backgroundColor: LB,
+            verticalAlign: 'top', textAlign: 'center',
+            padding: '16px 12px 16px 6px',
+          }}>
+            {/* Logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={company.logo}
+              width={90} height="auto"
+              alt={company.legalName}
+              style={{ display: 'block', width: 90, height: 'auto', margin: '0 auto' }}
+            />
+
+            {/* QR-Code */}
+            {qrDataUrl && (
+              <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={data.bannerUrl}
-                  alt="Banner"
-                  style={{ display: 'block', maxWidth: 600, width: '100%', height: 'auto' }}
+                  src={qrDataUrl}
+                  width={76} height={76}
+                  alt="QR-Code"
+                  style={{ display: 'block', width: 76, height: 76, margin: '10px auto 0' }}
                 />
-              </td>
-            </tr>
-          )}
+                <div style={{ fontFamily: F, fontSize: 9, color: '#999', textAlign: 'center', marginTop: 4 }}>
+                  Visitenkarte
+                </div>
+              </>
+            )}
+          </td>
 
-          {/* ── Divider vor Footer ── */}
+        </tr>
+
+        {/* ── Banner (optional) ── */}
+        {data.bannerUrl && (
           <tr>
-            <td style={{ paddingTop: data.bannerUrl ? 0 : 10 }}>
-              <div style={{ height: 2, backgroundColor: NEON, marginBottom: 8 }} />
+            <td colSpan={3} style={{ padding: 0 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={data.bannerUrl}
+                alt="Banner"
+                style={{ display: 'block', maxWidth: 600, width: '100%', height: 'auto' }}
+              />
             </td>
           </tr>
+        )}
 
-          {/* ── Row 6: Legal Footer ── */}
-          <tr>
-            <td>
-              <div style={{
-                fontFamily: FONT,
-                fontSize: 10,
-                color: GRAY,
-                lineHeight: 1.6,
-              }}>
-                {company.legalFooter}
-                {company.ustId && ` | USt.-ID: ${company.ustId}`}
-              </div>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
-    </div>
+      </tbody>
+    </table>
   )
 }
