@@ -5,7 +5,7 @@ MODE=${1:-preview}
 PROJECT="rl-intranet"
 SSH_USER="web6"
 SSH_HOST="hosting.suchycreative.de"
-NODE_PATH="/opt/plesk/node/20/bin"
+NODE_PATH="/opt/plesk/node/25/bin"
 PM2="/var/www/vhosts/web6.d2-1053.ncsrv.de/.npm-global/lib/node_modules/pm2/bin/pm2"
 
 if [ "$MODE" = "preview" ]; then
