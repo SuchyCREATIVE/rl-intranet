@@ -41,6 +41,9 @@ ssh "${SSH_USER}@${SSH_HOST}" "
   echo '  npm install...'
   npm install 2>&1 | tail -3
 
+  echo '  native modules rebuild (better-sqlite3)...'
+  npm rebuild better-sqlite3 2>&1 | tail -3
+
   echo '  prisma generate...'
   DATABASE_URL='file:./dev.db' npx prisma generate 2>&1 | tail -3
 
