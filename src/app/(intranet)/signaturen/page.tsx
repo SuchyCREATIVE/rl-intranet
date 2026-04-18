@@ -126,7 +126,21 @@ function BannerList({ banners, onChange }: { banners: string[]; onChange: (b: st
   function readFile(file: File) {
     if (!file.type.startsWith('image/')) return
     const reader = new FileReader()
-    reader.onload = (e) => onChange([...banners, e.target?.result as string])
+    reader.onload = (e) => {
+      const src = e.target?.result as string
+      const img = new window.Image()
+      img.onload = () => {
+        const maxW = 600
+        const scale = Math.min(1, maxW / img.width)
+        const w = Math.round(img.width * scale)
+        const h = Math.round(img.height * scale)
+        const cv = document.createElement('canvas')
+        cv.width = w; cv.height = h
+        cv.getContext('2d')?.drawImage(img, 0, 0, w, h)
+        onChange([...banners, cv.toDataURL('image/jpeg', 0.82)])
+      }
+      img.src = src
+    }
     reader.readAsDataURL(file)
   }
 
@@ -262,7 +276,21 @@ export default function SignaturenPage() {
   const handleFileRead = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return
     const reader = new FileReader()
-    reader.onload = (e) => setValue('photoUrl', e.target?.result as string)
+    reader.onload = (e) => {
+      const src = e.target?.result as string
+      const img = new window.Image()
+      img.onload = () => {
+        const maxSize = 220
+        const scale = Math.min(1, maxSize / Math.max(img.width, img.height))
+        const w = Math.round(img.width * scale)
+        const h = Math.round(img.height * scale)
+        const canvas = document.createElement('canvas')
+        canvas.width = w; canvas.height = h
+        canvas.getContext('2d')?.drawImage(img, 0, 0, w, h)
+        setValue('photoUrl', canvas.toDataURL('image/jpeg', 0.82))
+      }
+      img.src = src
+    }
     reader.readAsDataURL(file)
   }, [setValue])
 
