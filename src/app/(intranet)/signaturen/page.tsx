@@ -294,15 +294,15 @@ export default function SignaturenPage() {
   return (
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
-      <div className="bg-[#1c1c1c] border-b-4 border-[#DCFF0C]">
+      <div className="bg-white border-b-4 border-[#DCFF0C]">
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <div>
-            <h1 className="text-white text-2xl font-bold tracking-tight">E-Mail Signatur Generator</h1>
-            <p className="text-zinc-400 text-sm mt-0.5">Erstelle deine professionelle E-Mail-Signatur</p>
+            <h1 className="text-zinc-900 text-2xl font-bold tracking-tight">E-Mail Signatur Generator</h1>
+            <p className="text-zinc-500 text-sm mt-0.5">Erstelle deine professionelle E-Mail-Signatur</p>
           </div>
           <Link
             href="/signaturen/anleitung"
-            className="flex items-center gap-2 text-[#DCFF0C] text-sm font-medium border border-[#DCFF0C]/40 px-4 py-2 rounded-lg hover:bg-[#DCFF0C]/10 transition-colors"
+            className="flex items-center gap-2 bg-[#DCFF0C] text-zinc-900 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#c8ec00] transition-colors"
           >
             <BookOpen size={16} />
             Outlook-Anleitung
@@ -322,7 +322,7 @@ export default function SignaturenPage() {
               onClick={() => setActiveTab(id)}
               className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeTab === id
-                  ? 'bg-[#1c1c1c] text-[#DCFF0C] shadow-sm'
+                  ? 'bg-[#DCFF0C] text-zinc-900 shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-800'
               }`}
             >
@@ -702,9 +702,9 @@ function AnleitungContent() {
         },
       ].map(({ title, steps }) => (
         <div key={title} className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 bg-[#1c1c1c] flex items-center gap-3">
+          <div className="px-6 py-4 bg-white border-b border-zinc-100 flex items-center gap-3">
             <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
-            <h2 className="font-semibold text-white">{title}</h2>
+            <h2 className="font-semibold text-zinc-900">{title}</h2>
           </div>
           <ol className="divide-y divide-zinc-100">
             {steps.map(({ title: t, desc }, i) => (
