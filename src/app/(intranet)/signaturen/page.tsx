@@ -315,17 +315,21 @@ export default function SignaturenPage() {
         legalCompanies: JSON.stringify(legalCompanies),
         logoUrl: selectedLogoUrl || null,
       }
+      // Gleichnamige Signatur → überschreiben (PUT), sonst neu anlegen (POST)
+      const existing = data.name?.trim()
+        ? savedSignatures.find(s => s.name?.toLowerCase() === data.name!.trim().toLowerCase())
+        : null
       const res = await fetch('/api/signatures', {
-        method: 'POST',
+        method: existing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(existing ? { ...payload, id: existing.id } : payload),
       })
       if (res.ok) {
         setSaved(true); setTimeout(() => setSaved(false), 3000)
         await loadSavedSignatures(); setSavedListOpen(true)
       }
     } catch { /* ignore */ }
-  }, [loadSavedSignatures, banners, legalCompanies, selectedLogoUrl])
+  }, [loadSavedSignatures, banners, legalCompanies, selectedLogoUrl, savedSignatures])
 
   const handleLoadSignature = useCallback((sig: SavedSignature) => {
     reset({
@@ -738,13 +742,23 @@ function AnleitungContent() {
           ],
         },
         {
-          title: 'Outlook Mac (2016, 2019, 365)',
+          title: 'Outlook Mac (Microsoft 365, neue Version)',
+          steps: [
+            { title: 'Einstellungen öffnen', desc: 'Klicke in der Menüleiste auf Outlook → Einstellungen (⌘,) → „Schreiben und Antworten".' },
+            { title: 'Signaturen aufrufen', desc: 'Klicke auf „Signaturen". Es öffnet sich der Signatur-Editor.' },
+            { title: 'Neue Signatur anlegen', desc: 'Klicke auf „+" (neu) und vergib einen Namen.' },
+            { title: 'HTML einfügen – Methode 1', desc: 'Klicke ins leere Textfeld der Signatur. Dann im macOS-Menü oben: Bearbeiten → Als HTML einfügen. Den zuvor kopierten HTML-Code einfügen.' },
+            { title: 'HTML einfügen – Methode 2 (falls Methode 1 fehlt)', desc: 'HTML-Code in eine Datei (z. B. signatur.html) speichern und in Safari öffnen. Dort alles markieren (⌘+A), kopieren (⌘+C) und direkt ins Signaturfeld einfügen (⌘+V).' },
+            { title: 'Als Standard setzen & schließen', desc: 'Unter „Standardsignatur" das gewünschte Konto + diese Signatur auswählen. Fenster schließen.' },
+          ],
+        },
+        {
+          title: 'Outlook Mac (ältere Version 2016/2019)',
           steps: [
             { title: 'Einstellungen öffnen', desc: 'Klicke in der Menüleiste auf Outlook → Einstellungen (⌘,).' },
             { title: 'Signaturen aufrufen', desc: 'Klicke im Abschnitt „E-Mail" auf „Signaturen".' },
-            { title: 'Neue Signatur anlegen', desc: 'Klicke unten links auf das „+"-Symbol.' },
-            { title: 'Name vergeben', desc: 'Gib der Signatur einen Namen.' },
-            { title: 'HTML-Code einfügen', desc: 'Klicke in das Bearbeitungsfeld → Bearbeiten → Als HTML einfügen.' },
+            { title: 'Neue Signatur anlegen', desc: 'Klicke unten links auf das „+"-Symbol und vergib einen Namen.' },
+            { title: 'HTML-Code einfügen', desc: 'Klicke ins Bearbeitungsfeld der Signatur. Dann im macOS-Menü: Bearbeiten → Als HTML einfügen.' },
             { title: 'Speichern & schließen', desc: 'Klicke auf „Speichern" und schließe den Dialog.' },
           ],
         },
