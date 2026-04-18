@@ -7,6 +7,7 @@ import AdminSidebarClient from './AdminSidebarClient'
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', iconName: 'LayoutDashboard' as const, exact: true },
   { href: '/admin/users', label: 'Benutzer', iconName: 'Users' as const },
+  { href: '/admin/logos', label: 'Logos', iconName: 'Image' as const },
   { href: '/admin/email', label: 'E-Mail', iconName: 'Mail' as const },
   { href: '/admin/settings', label: 'Einstellungen', iconName: 'Settings' as const },
   { href: '/admin/help', label: 'Hilfe', iconName: 'HelpCircle' as const },

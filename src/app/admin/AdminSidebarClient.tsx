@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Mail, Settings, HelpCircle } from 'lucide-react'
+import { LayoutDashboard, Users, Mail, Settings, HelpCircle, Image } from 'lucide-react'
 
 interface NavItem {
   href: string
   label: string
-  iconName: 'LayoutDashboard' | 'Users' | 'Mail' | 'Settings' | 'HelpCircle'
+  iconName: 'LayoutDashboard' | 'Users' | 'Mail' | 'Settings' | 'HelpCircle' | 'Image'
   exact?: boolean
 }
 
@@ -17,6 +17,7 @@ const ICONS = {
   Mail,
   Settings,
   HelpCircle,
+  Image,
 }
 
 interface AdminSidebarClientProps {

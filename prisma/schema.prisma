@@ -35,7 +35,7 @@ model Settings {
 model SignatureTemplate {
   id             String   @id @default(cuid())
   name           String?  // Anzeigename / Beschriftung
-  company        String   // "raederlogistik" | "reifen-gerlach"
+  company        String   // "raederlogistik" | "reifen-gerlach" | "rtg"
   firstName      String
   lastName       String
   position       String
@@ -46,7 +46,17 @@ model SignatureTemplate {
   website        String?
   photoUrl       String?
   bannerUrl      String?  // Optionales Banner-Bild (z.B. Premio)
+  logoUrl        String?  // Gewähltes Logo (überschreibt Firmen-Standard)
   showStandorte  Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model CompanyLogo {
+  id        String   @id @default(cuid())
+  company   String   // "raederlogistik" | "reifen-gerlach" | "rtg"
+  label     String   // "Standard" | "Weihnachten" | "Karneval" | "Ostern" | …
+  filePath  String   // z.B. "/logos/uploaded/rl-karneval.jpg"
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

@@ -11,11 +11,20 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import SignaturePreview from '@/components/SignaturePreview'
-import { SignatureData, generateSignatureHTMLSync } from '@/lib/signature-export'
+import { SignatureData, CompanyKey, COMPANY_CONFIG, generateSignatureHTMLSync } from '@/lib/signature-export'
+
+interface CompanyLogo {
+  id: string
+  company: string
+  label: string
+  filePath: string
+  isActive: boolean
+  builtin?: boolean
+}
 
 const schema = z.object({
   name: z.string().optional(),
-  company: z.enum(['raederlogistik', 'reifen-gerlach']),
+  company: z.enum(['raederlogistik', 'reifen-gerlach', 'rtg']),
   firstName: z.string().min(1, 'Vorname ist erforderlich'),
   lastName: z.string().min(1, 'Nachname ist erforderlich'),
   position: z.string().min(1, 'Position ist erforderlich'),
@@ -45,6 +54,7 @@ interface SavedSignature {
   website?: string | null
   photoUrl?: string | null
   bannerUrl?: string | null
+  logoUrl?: string | null
   showStandorte?: boolean
 }
 
@@ -122,6 +132,8 @@ export default function SignaturenPage() {
   const [savedListOpen, setSavedListOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [standorte, setStandorte] = useState<string[]>([])
+  const [availableLogos, setAvailableLogos] = useState<CompanyLogo[]>([])
+  const [selectedLogoUrl, setSelectedLogoUrl] = useState<string>('')
   const photoInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
 
@@ -136,7 +148,7 @@ export default function SignaturenPage() {
     resolver: zodResolver(schema),
     defaultValues: {
       name: '',
-      company: 'raederlogistik',
+      company: 'raederlogistik' as CompanyKey,
       firstName: '',
       lastName: '',
       position: '',
@@ -154,7 +166,7 @@ export default function SignaturenPage() {
   const formValues = watch()
 
   const signatureData: SignatureData = {
-    company: formValues.company,
+    company: formValues.company as CompanyKey,
     firstName: formValues.firstName || 'Vorname',
     lastName: formValues.lastName || 'Nachname',
     position: formValues.position || 'Position',
@@ -165,6 +177,7 @@ export default function SignaturenPage() {
     website: formValues.website || undefined,
     photoUrl: formValues.photoUrl || undefined,
     bannerUrl: formValues.bannerUrl || undefined,
+    logoUrl: selectedLogoUrl || undefined,
     showStandorte: formValues.showStandorte,
   }
 
@@ -182,6 +195,22 @@ export default function SignaturenPage() {
       .then(d => { if (d.cities) setStandorte(d.cities) })
       .catch(() => {})
   }, [loadSavedSignatures])
+
+  // Logos laden wenn Firma wechselt
+  useEffect(() => {
+    const company = formValues.company
+    if (!company) return
+    fetch(`/api/logos?company=${company}`)
+      .then(r => r.json())
+      .then((logos: CompanyLogo[]) => {
+        setAvailableLogos(logos)
+        // Standard: aktives Logo vorauswählen
+        const active = logos.find(l => l.isActive)
+        setSelectedLogoUrl(active?.filePath || COMPANY_CONFIG[company as CompanyKey]?.logo || '')
+      })
+      .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formValues.company])
 
   // Foto-Upload
   const handleFileRead = useCallback((file: File, field: 'photoUrl' | 'bannerUrl') => {
@@ -234,7 +263,7 @@ export default function SignaturenPage() {
   const handleLoadSignature = useCallback((sig: SavedSignature) => {
     reset({
       name: sig.name || '',
-      company: sig.company as 'raederlogistik' | 'reifen-gerlach',
+      company: sig.company as CompanyKey,
       firstName: sig.firstName,
       lastName: sig.lastName,
       position: sig.position,
@@ -247,6 +276,7 @@ export default function SignaturenPage() {
       bannerUrl: sig.bannerUrl || '',
       showStandorte: sig.showStandorte !== false,
     })
+    if (sig.logoUrl) setSelectedLogoUrl(sig.logoUrl)
   }, [reset])
 
   const handleDeleteSignature = useCallback(async (id: string) => {
@@ -397,6 +427,7 @@ export default function SignaturenPage() {
                     <select {...register('company')} className={inputClass}>
                       <option value="raederlogistik">Räderlogistik Franchise GmbH</option>
                       <option value="reifen-gerlach">Reifen Gerlach GmbH</option>
+                      <option value="rtg">RTG GmbH</option>
                     </select>
                   </div>
                   <div className="flex items-end pb-0.5">
@@ -420,6 +451,34 @@ export default function SignaturenPage() {
                     </label>
                   </div>
                 </div>
+
+                {/* Logo-Auswahl */}
+                {availableLogos.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                      <Image size={14} className="inline mr-1.5 text-zinc-400" />
+                      Logo-Variante
+                    </label>
+                    <div className="flex gap-3 flex-wrap">
+                      {availableLogos.map(logo => (
+                        <button
+                          key={logo.id}
+                          type="button"
+                          onClick={() => setSelectedLogoUrl(logo.filePath)}
+                          className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg border-2 transition-all ${
+                            selectedLogoUrl === logo.filePath
+                              ? 'border-[#DCFF0C] bg-[#DCFF0C]/5'
+                              : 'border-zinc-200 hover:border-zinc-300'
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={logo.filePath} alt={logo.label} className="h-10 w-auto object-contain" />
+                          <span className="text-xs text-zinc-600">{logo.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Name + Position */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
