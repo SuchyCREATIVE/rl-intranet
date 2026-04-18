@@ -95,7 +95,7 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 64 : 220 }}
+      animate={{ width: collapsed ? 64 : 248 }}
       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
       className="relative flex flex-col h-full shrink-0 overflow-hidden border-r"
       style={{ backgroundColor: '#ffffff', borderColor: '#e5e7eb' }}
@@ -113,16 +113,18 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="flex items-center overflow-hidden"
+              className="flex items-center gap-2.5 overflow-hidden"
             >
               <Image
                 src="/logos/raederlogistik-Logo-Rand.svg"
                 alt="Räderlogistik"
                 width={130}
-                height={36}
+                height={40}
                 priority
-                className="h-7 w-auto"
+                className="h-10 w-auto shrink-0"
               />
+              <div className="w-px h-6 bg-zinc-200 shrink-0" />
+              <span className="text-sm font-semibold text-zinc-600 whitespace-nowrap">Intranet</span>
             </motion.div>
           ) : (
             <motion.div

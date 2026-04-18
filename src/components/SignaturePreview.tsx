@@ -47,7 +47,7 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
             width: 155,
             backgroundColor: LB,
             backgroundImage: 'url(/logos/reifenspuren.png)',
-            backgroundSize: 'cover',
+            backgroundSize: '115px auto',
             backgroundPosition: 'center center',
             backgroundRepeat: 'no-repeat',
             verticalAlign: 'middle',
