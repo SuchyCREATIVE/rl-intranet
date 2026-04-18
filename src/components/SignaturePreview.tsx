@@ -45,7 +45,7 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
           {/* Linke Spalte: Weiß + Reifenspuren als Hintergrund */}
           <td width={155} style={{
             width: 155,
-            backgroundColor: WH,
+            backgroundColor: LB,
             backgroundImage: 'url(/logos/reifenspuren.png)',
             backgroundSize: 'cover',
             backgroundPosition: 'center center',

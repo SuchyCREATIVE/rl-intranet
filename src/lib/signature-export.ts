@@ -214,9 +214,9 @@ function buildSignatureHTML(
     <tr>
 
       <!-- Linke Spalte: Weiß, Reifenspuren als Hintergrund, Foto/Initialen -->
-      <td width="155" bgcolor="${WH}"
+      <td width="155" bgcolor="${LB}"
           background="${tracksUrl}"
-          style="width:155px;background-color:${WH};background-image:url('${tracksUrl}');background-size:cover;background-position:center center;background-repeat:no-repeat;vertical-align:middle;text-align:center;padding:22px 12px;">
+          style="width:155px;background-color:${LB};background-image:url('${tracksUrl}');background-size:cover;background-position:center center;background-repeat:no-repeat;vertical-align:middle;text-align:center;padding:22px 12px;">
         ${photoBlock}
       </td>
 
