@@ -12,7 +12,7 @@ const FALLBACK_STANDORTE = [
 const Y  = '#DCFF0C'
 const DB = '#1c1c1c'
 const LB = '#efefef'
-const WH = '#ffffff'   // Rechte Spalte weiß (wie PDF-Vorlage)
+const WH = '#ffffff'
 const TD = '#222222'
 const TG = '#666666'
 const F  = 'Arial, Helvetica, sans-serif'
@@ -25,7 +25,9 @@ interface SignaturePreviewProps {
 export default function SignaturePreview({ data, standorte = [] }: SignaturePreviewProps) {
   const company = COMPANY_CONFIG[data.company]
   const websiteUrl = data.website || company.website
-  const cities = standorte.length > 0 ? standorte : FALLBACK_STANDORTE
+  const street  = data.street  || company.address
+  const zipCity = data.zipCity || company.city
+  const cities  = standorte.length > 0 ? standorte : FALLBACK_STANDORTE
   const logoSrc = data.logoUrl || company.logo
 
   const [mounted, setMounted] = useState(false)
@@ -39,8 +41,8 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
         <tr>
 
           {/* ── Linke Spalte: Dunkel + Foto ── */}
-          <td width={155} style={{
-            width: 155, backgroundColor: DB,
+          <td width={150} style={{
+            width: 150, backgroundColor: DB,
             verticalAlign: 'middle', textAlign: 'center',
             padding: '20px 14px',
           }}>
@@ -49,7 +51,7 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
                 display: 'inline-block',
                 backgroundColor: Y,
                 borderRadius: 54,
-                padding: 3,
+                padding: 4,
                 lineHeight: 0,
               }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -79,7 +81,7 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
               <tbody>
                 {data.phone && (
                   <tr>
-                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 12, paddingBottom: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Telefon</td>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 14, paddingBottom: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Telefon</td>
                     <td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 3 }}>
                       <a href={`tel:${data.phone.replace(/\s/g, '')}`} style={{ color: TD, textDecoration: 'none' }}>{data.phone}</a>
                     </td>
@@ -87,32 +89,40 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
                 )}
                 {data.fax && (
                   <tr>
-                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 12, paddingBottom: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Telefax</td>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 14, paddingBottom: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Telefax</td>
                     <td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 3 }}>{data.fax}</td>
                   </tr>
                 )}
                 {data.mobile && (
                   <tr>
-                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 12, paddingBottom: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Mobil</td>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 14, paddingBottom: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Mobil</td>
                     <td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 3 }}>
                       <a href={`tel:${data.mobile.replace(/\s/g, '')}`} style={{ color: TD, textDecoration: 'none' }}>{data.mobile}</a>
                     </td>
                   </tr>
                 )}
                 <tr>
-                  <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 12, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Mail</td>
+                  <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 14, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Mail</td>
                   <td style={{ fontFamily: F, fontSize: 12, color: TD }}>
                     <a href={`mailto:${data.email}`} style={{ color: TD, textDecoration: 'none' }}>{data.email}</a>
                   </td>
                 </tr>
+                {data.zoomLink && (
+                  <tr>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TG, paddingRight: 14, paddingTop: 3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>Zoom</td>
+                    <td style={{ fontFamily: F, fontSize: 12, color: TD, paddingTop: 3 }}>
+                      <a href={data.zoomLink} target="_blank" rel="noopener noreferrer" style={{ color: TD, textDecoration: 'none' }}>Meeting-Link</a>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
 
             <table cellPadding={0} cellSpacing={0} border={0} style={{ marginTop: 12 }}>
               <tbody>
                 <tr><td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 2 }}>{company.legalName}</td></tr>
-                <tr><td style={{ fontFamily: F, fontSize: 12, color: TG, paddingBottom: 2 }}>{company.address}</td></tr>
-                <tr><td style={{ fontFamily: F, fontSize: 12, color: TG }}>{company.city}</td></tr>
+                <tr><td style={{ fontFamily: F, fontSize: 12, color: TG, paddingBottom: 2 }}>{street}</td></tr>
+                <tr><td style={{ fontFamily: F, fontSize: 12, color: TG }}>{zipCity}</td></tr>
               </tbody>
             </table>
 
@@ -122,29 +132,35 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
             </div>
           </td>
 
-          {/* ── Rechte Spalte: Logo (weiß wie PDF-Vorlage) ── */}
-          <td width={120} style={{
-            width: 120, backgroundColor: WH,
+          {/* ── Rechte Spalte: Logo (weiß) ── */}
+          <td width={130} style={{
+            width: 130, backgroundColor: WH,
             verticalAlign: 'top', textAlign: 'center',
-            padding: '18px 14px',
+            padding: '18px 12px 18px 14px',
           }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={logoSrc}
-              width={92} height="auto"
+              width={96}
               alt={company.legalName}
-              style={{ display: 'block', width: 92, height: 'auto', margin: '0 auto' }}
+              style={{ display: 'block', width: 96, height: 'auto', margin: '0 auto' }}
             />
           </td>
+
+          {/* ── Gelber Akzentstreifen (rechter Rand, wie PDF-Vorlage) ── */}
+          <td width={6} style={{
+            width: 6, minWidth: 6, backgroundColor: Y,
+            verticalAlign: 'top',
+          }} />
 
         </tr>
 
         {/* ── Standorte-Zeile ── */}
         {data.showStandorte !== false && (
           <tr>
-            <td colSpan={3} style={{
+            <td colSpan={4} style={{
               backgroundColor: DB,
-              padding: '8px 14px',
+              padding: '8px 16px',
               borderTop: `2px solid ${Y}`,
             }}>
               <span style={{ fontFamily: F, fontSize: 11, color: '#aaa' }}>
@@ -158,7 +174,7 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
         {/* ── Banner (optional) ── */}
         {data.bannerUrl && (
           <tr>
-            <td colSpan={3} style={{ padding: 0 }}>
+            <td colSpan={4} style={{ padding: 0 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={data.bannerUrl} alt="Banner"
                 style={{ display: 'block', maxWidth: 600, width: '100%', height: 'auto' }} />

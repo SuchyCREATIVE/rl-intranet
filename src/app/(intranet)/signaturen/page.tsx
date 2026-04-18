@@ -36,6 +36,11 @@ const schema = z.object({
   photoUrl: z.string().optional(),
   bannerUrl: z.string().optional(),
   showStandorte: z.boolean().optional(),
+  // Individuelle Adresse (überschreibt Firmenwert für Franchise-Standorte)
+  street: z.string().optional(),
+  zipCity: z.string().optional(),
+  // Zoom-Meeting-Link
+  zoomLink: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -56,6 +61,9 @@ interface SavedSignature {
   bannerUrl?: string | null
   logoUrl?: string | null
   showStandorte?: boolean
+  street?: string | null
+  zipCity?: string | null
+  zoomLink?: string | null
 }
 
 interface UploadFieldProps {
@@ -160,6 +168,9 @@ export default function SignaturenPage() {
       photoUrl: '',
       bannerUrl: '',
       showStandorte: true,
+      street: '',
+      zipCity: '',
+      zoomLink: '',
     },
   })
 
@@ -179,6 +190,9 @@ export default function SignaturenPage() {
     bannerUrl: formValues.bannerUrl || undefined,
     logoUrl: selectedLogoUrl || undefined,
     showStandorte: formValues.showStandorte,
+    street: formValues.street || undefined,
+    zipCity: formValues.zipCity || undefined,
+    zoomLink: formValues.zoomLink || undefined,
   }
 
   const loadSavedSignatures = useCallback(async () => {
@@ -275,6 +289,9 @@ export default function SignaturenPage() {
       photoUrl: sig.photoUrl || '',
       bannerUrl: sig.bannerUrl || '',
       showStandorte: sig.showStandorte !== false,
+      street: sig.street || '',
+      zipCity: sig.zipCity || '',
+      zoomLink: sig.zoomLink || '',
     })
     if (sig.logoUrl) setSelectedLogoUrl(sig.logoUrl)
   }, [reset])
@@ -532,6 +549,30 @@ export default function SignaturenPage() {
                     </label>
                     <input {...register('website')} type="url" placeholder="https://www.raederlogistik.de/" className={inputClass} />
                     {errors.website && <p className="text-red-500 text-xs mt-1">{errors.website.message}</p>}
+                  </div>
+                </div>
+
+                {/* Adresse + Zoom */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-4 rounded-full bg-zinc-200" />
+                    <p className="text-sm font-medium text-zinc-500">Standort-Adresse <span className="font-normal text-zinc-400">(optional – überschreibt Firmenvorgabe)</span></p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Straße</label>
+                      <input {...register('street')} placeholder="z. B. Hauptstraße 12" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">PLZ + Ort</label>
+                      <input {...register('zipCity')} placeholder="z. B. 40721 Hilden" className={inputClass} />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                        Zoom-Link <span className="text-zinc-400 font-normal">(optional)</span>
+                      </label>
+                      <input {...register('zoomLink')} type="url" placeholder="https://us05web.zoom.us/j/..." className={inputClass} />
+                    </div>
                   </div>
                 </div>
 
