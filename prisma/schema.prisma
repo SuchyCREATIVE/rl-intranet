@@ -45,9 +45,14 @@ model SignatureTemplate {
   email          String
   website        String?
   photoUrl       String?
-  bannerUrl      String?  // Optionales Banner-Bild (z.B. Premio)
+  banners        String?  // JSON-Array von Banner-URLs (mehrere möglich), z.B. '["url1","url2"]'
   logoUrl        String?  // Gewähltes Logo (überschreibt Firmen-Standard)
   showStandorte  Boolean  @default(true)
+  legalCompanies String?  // JSON-Array, z.B. '["raederlogistik","reifen-gerlach"]'
+  street         String?  // Individuelle Adresse (Franchise-Standort)
+  zipCity        String?  // PLZ + Ort
+  whatsapp       String?
+  zoomLink       String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

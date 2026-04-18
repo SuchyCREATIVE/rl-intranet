@@ -7,7 +7,8 @@ import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Copy, Check, Upload, X, Save, BookOpen, Pen,
-  Trash2, FolderOpen, ChevronDown, ChevronUp, MapPin, Image,
+  Trash2, FolderOpen, ChevronDown, ChevronUp, MapPin,
+  Image, Plus, ArrowUp, ArrowDown,
 } from 'lucide-react'
 import Link from 'next/link'
 import SignaturePreview from '@/components/SignaturePreview'
@@ -22,6 +23,12 @@ interface CompanyLogo {
   builtin?: boolean
 }
 
+const ALL_COMPANIES: { key: CompanyKey; label: string }[] = [
+  { key: 'raederlogistik', label: 'Räderlogistik Franchise GmbH' },
+  { key: 'reifen-gerlach', label: 'Reifen Gerlach GmbH' },
+  { key: 'rtg', label: 'RTG GmbH' },
+]
+
 const schema = z.object({
   name: z.string().optional(),
   company: z.enum(['raederlogistik', 'reifen-gerlach', 'rtg']),
@@ -31,17 +38,13 @@ const schema = z.object({
   phone: z.string().optional(),
   fax: z.string().optional(),
   mobile: z.string().optional(),
+  whatsapp: z.string().optional(),
   email: z.string().email('Gültige E-Mail-Adresse erforderlich'),
   website: z.string().url('Gültige URL erforderlich').optional().or(z.literal('')),
   photoUrl: z.string().optional(),
-  bannerUrl: z.string().optional(),
   showStandorte: z.boolean().optional(),
-  showLegalFooter: z.boolean().optional(),
-  // Individuelle Adresse (überschreibt Firmenwert für Franchise-Standorte)
   street: z.string().optional(),
   zipCity: z.string().optional(),
-  // Zusätzliche Kontaktfelder
-  whatsapp: z.string().optional(),
   zoomLink: z.string().optional(),
 })
 
@@ -57,130 +60,197 @@ interface SavedSignature {
   phone?: string | null
   fax?: string | null
   mobile?: string | null
+  whatsapp?: string | null
   email: string
   website?: string | null
   photoUrl?: string | null
-  bannerUrl?: string | null
+  banners?: string | null      // JSON
   logoUrl?: string | null
   showStandorte?: boolean
-  showLegalFooter?: boolean
+  legalCompanies?: string | null  // JSON
   street?: string | null
   zipCity?: string | null
-  whatsapp?: string | null
   zoomLink?: string | null
 }
 
-interface UploadFieldProps {
-  field: 'photoUrl' | 'bannerUrl'
-  label: string
+// ── Upload-Feld für Profilfoto ──────────────────────────────────────────────
+function PhotoUploadField({
+  inputRef, value, isDragging,
+  onDragOver, onDragLeave, onDrop, onChange, onRemove,
+}: {
   inputRef: React.RefObject<HTMLInputElement | null>
-  value: string
-  isDragging: boolean
-  onDragOver: (e: React.DragEvent) => void
-  onDragLeave: () => void
+  value: string; isDragging: boolean
+  onDragOver: () => void; onDragLeave: () => void
   onDrop: (e: React.DragEvent) => void
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onRemove: () => void
-  previewRound?: boolean
-}
-
-function UploadField({
-  field, label, inputRef, value, isDragging,
-  onDragOver, onDragLeave, onDrop, onChange, onRemove,
-  previewRound = false,
-}: UploadFieldProps) {
+}) {
+  const inputClass = "w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 transition-all"
   return (
     <div>
       <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-        {label} <span className="text-zinc-400 font-normal">(optional)</span>
+        Profilfoto <span className="text-zinc-400 font-normal">(optional)</span>
       </label>
       <input ref={inputRef} type="file" accept="image/*" onChange={onChange} className="hidden" />
       {value ? (
-        <div className={`flex ${field === 'bannerUrl' ? 'flex-row' : 'flex-col'} items-center gap-3 p-4 bg-zinc-50 border border-zinc-200 rounded-lg h-[104px] justify-center`}>
+        <div className="flex flex-col items-center gap-3 p-4 bg-zinc-50 border border-zinc-200 rounded-lg h-[104px] justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={value}
-            alt="Vorschau"
-            className={`object-cover border-2 border-[#DCFF0C] ${previewRound ? 'w-14 h-14 rounded-full' : 'h-14 w-auto max-w-[200px] rounded'}`}
-          />
-          <button
-            type="button"
-            onClick={onRemove}
-            className="text-xs text-zinc-400 hover:text-red-500 flex items-center gap-1 transition-colors"
-          >
+          <img src={value} alt="Vorschau" className="w-14 h-14 rounded-full object-cover border-2 border-[#DCFF0C]" />
+          <button type="button" onClick={onRemove}
+            className="text-xs text-zinc-400 hover:text-red-500 flex items-center gap-1 transition-colors">
             <X size={12} /> Entfernen
           </button>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); onDragOver(e) }}
-          onDragEnter={(e) => { e.preventDefault(); onDragOver(e) }}
+        <button type="button" onClick={() => inputRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); onDragOver() }}
+          onDragEnter={(e) => { e.preventDefault(); onDragOver() }}
           onDragLeave={onDragLeave}
           onDrop={onDrop}
           className={`w-full h-[104px] flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg text-sm transition-all ${
-            isDragging
-              ? 'border-[#DCFF0C] bg-[#DCFF0C]/5 text-zinc-800'
-              : 'border-zinc-200 text-zinc-500 hover:border-[#DCFF0C]/50 hover:text-zinc-700'
-          }`}
-        >
-          {field === 'bannerUrl' ? <Image size={18} className={isDragging ? 'text-[#DCFF0C]' : ''} /> : <Upload size={18} className={isDragging ? 'text-[#DCFF0C]' : ''} />}
-          <span>{isDragging ? 'Datei loslassen' : field === 'bannerUrl' ? 'Banner hochladen' : 'Foto hochladen'}</span>
+            isDragging ? 'border-[#DCFF0C] bg-[#DCFF0C]/5 text-zinc-800' : 'border-zinc-200 text-zinc-500 hover:border-[#DCFF0C]/50 hover:text-zinc-700'
+          }`}>
+          <Upload size={18} className={isDragging ? 'text-[#DCFF0C]' : ''} />
+          <span>{isDragging ? 'Datei loslassen' : 'Foto hochladen'}</span>
           <span className="text-xs text-zinc-400">JPG, PNG · Drag & Drop oder Klick</span>
         </button>
       )}
+      {/* Unsichtbar für TS-Zufriedenheit */}
+      <input type="text" className="hidden" value={value} readOnly aria-hidden />
+      <span className="hidden">{inputClass}</span>
     </div>
   )
 }
 
+// ── Banner-Liste ─────────────────────────────────────────────────────────────
+function BannerList({ banners, onChange }: { banners: string[]; onChange: (b: string[]) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  function readFile(file: File, index?: number) {
+    if (!file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const url = e.target?.result as string
+      if (index !== undefined) {
+        const next = [...banners]
+        next[index] = url
+        onChange(next)
+      } else {
+        onChange([...banners, url])
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function moveUp(i: number) {
+    if (i === 0) return
+    const next = [...banners]
+    ;[next[i - 1], next[i]] = [next[i], next[i - 1]]
+    onChange(next)
+  }
+
+  function moveDown(i: number) {
+    if (i === banners.length - 1) return
+    const next = [...banners]
+    ;[next[i], next[i + 1]] = [next[i + 1], next[i]]
+    onChange(next)
+  }
+
+  function remove(i: number) {
+    onChange(banners.filter((_, idx) => idx !== i))
+  }
+
+  return (
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-zinc-700">
+        Banner-Bilder <span className="text-zinc-400 font-normal">(optional, mehrere möglich – z. B. Premio)</span>
+      </label>
+
+      {banners.map((url, i) => (
+        <div key={i} className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-200 rounded-lg">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={url} alt={`Banner ${i + 1}`} className="h-12 w-auto max-w-[120px] object-contain rounded border border-zinc-100" />
+          <div className="flex-1 text-xs text-zinc-400">Banner {i + 1}</div>
+          <div className="flex items-center gap-1">
+            <button type="button" onClick={() => moveUp(i)} disabled={i === 0}
+              className="p-1.5 rounded hover:bg-zinc-200 disabled:opacity-30 transition-colors" title="Nach oben">
+              <ArrowUp size={13} />
+            </button>
+            <button type="button" onClick={() => moveDown(i)} disabled={i === banners.length - 1}
+              className="p-1.5 rounded hover:bg-zinc-200 disabled:opacity-30 transition-colors" title="Nach unten">
+              <ArrowDown size={13} />
+            </button>
+            <button type="button" onClick={() => remove(i)}
+              className="p-1.5 rounded hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors" title="Entfernen">
+              <X size={13} />
+            </button>
+          </div>
+        </div>
+      ))}
+
+      {/* Banner hinzufügen */}
+      <input ref={inputRef} type="file" accept="image/*" className="hidden"
+        onChange={e => { if (e.target.files?.[0]) { readFile(e.target.files[0]); e.target.value = '' } }} />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={e => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files?.[0]) readFile(e.dataTransfer.files[0]) }}
+        className={`w-full h-16 flex items-center justify-center gap-2 border-2 border-dashed rounded-lg text-sm transition-all ${
+          isDragging ? 'border-[#DCFF0C] bg-[#DCFF0C]/5 text-zinc-800' : 'border-zinc-200 text-zinc-500 hover:border-[#DCFF0C]/50'
+        }`}
+      >
+        <Plus size={15} />
+        Banner hinzufügen
+      </button>
+    </div>
+  )
+}
+
+// ── Hauptkomponente ──────────────────────────────────────────────────────────
 export default function SignaturenPage() {
   const [activeTab, setActiveTab] = useState<'generator' | 'anleitung'>('generator')
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
   const [isDraggingPhoto, setIsDraggingPhoto] = useState(false)
-  const [isDraggingBanner, setIsDraggingBanner] = useState(false)
   const [savedSignatures, setSavedSignatures] = useState<SavedSignature[]>([])
   const [savedListOpen, setSavedListOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [standorte, setStandorte] = useState<string[]>([])
   const [availableLogos, setAvailableLogos] = useState<CompanyLogo[]>([])
   const [selectedLogoUrl, setSelectedLogoUrl] = useState<string>('')
+  // Banner als eigener State (Array)
+  const [banners, setBanners] = useState<string[]>([])
+  // Rechtliche Angaben: welche Firmen anzeigen
+  const [legalCompanies, setLegalCompanies] = useState<CompanyKey[]>(['raederlogistik'])
   const photoInputRef = useRef<HTMLInputElement>(null)
-  const bannerInputRef = useRef<HTMLInputElement>(null)
 
   const {
-    register,
-    watch,
-    setValue,
-    handleSubmit,
-    reset,
+    register, watch, setValue, handleSubmit, reset,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: '',
-      company: 'raederlogistik' as CompanyKey,
-      firstName: '',
-      lastName: '',
-      position: '',
-      phone: '',
-      fax: '',
-      mobile: '',
-      email: '',
-      website: '',
-      photoUrl: '',
-      bannerUrl: '',
+      name: '', company: 'raederlogistik' as CompanyKey,
+      firstName: '', lastName: '', position: '',
+      phone: '', fax: '', mobile: '', whatsapp: '',
+      email: '', website: '', photoUrl: '',
       showStandorte: true,
-      showLegalFooter: true,
-      street: '',
-      zipCity: '',
-      whatsapp: '',
-      zoomLink: '',
+      street: '', zipCity: '', zoomLink: '',
     },
   })
 
   const formValues = watch()
+
+  // legalCompanies auf Firmenwechsel anpassen (Default: gewählte Firma)
+  useEffect(() => {
+    setLegalCompanies(prev => {
+      if (prev.length === 0) return [formValues.company as CompanyKey]
+      return prev
+    })
+  }, [formValues.company])
 
   const signatureData: SignatureData = {
     company: formValues.company as CompanyKey,
@@ -190,16 +260,16 @@ export default function SignaturenPage() {
     phone: formValues.phone || undefined,
     fax: formValues.fax || undefined,
     mobile: formValues.mobile || undefined,
+    whatsapp: formValues.whatsapp || undefined,
     email: formValues.email || 'email@beispiel.de',
     website: formValues.website || undefined,
     photoUrl: formValues.photoUrl || undefined,
-    bannerUrl: formValues.bannerUrl || undefined,
+    banners: banners.length > 0 ? banners : undefined,
     logoUrl: selectedLogoUrl || undefined,
     showStandorte: formValues.showStandorte,
-    showLegalFooter: formValues.showLegalFooter,
+    legalCompanies: legalCompanies.length > 0 ? legalCompanies : undefined,
     street: formValues.street || undefined,
     zipCity: formValues.zipCity || undefined,
-    whatsapp: formValues.whatsapp || undefined,
     zoomLink: formValues.zoomLink || undefined,
   }
 
@@ -212,43 +282,30 @@ export default function SignaturenPage() {
 
   useEffect(() => {
     loadSavedSignatures()
-    fetch('/api/standorte')
-      .then(r => r.json())
-      .then(d => { if (d.cities) setStandorte(d.cities) })
-      .catch(() => {})
+    fetch('/api/standorte').then(r => r.json())
+      .then(d => { if (d.cities) setStandorte(d.cities) }).catch(() => {})
   }, [loadSavedSignatures])
 
   // Logos laden wenn Firma wechselt
   useEffect(() => {
-    const company = formValues.company
+    const company = formValues.company as CompanyKey
     if (!company) return
     fetch(`/api/logos?company=${company}`)
       .then(r => r.json())
       .then((logos: CompanyLogo[]) => {
         setAvailableLogos(logos)
-        // Standard: aktives Logo vorauswählen
         const active = logos.find(l => l.isActive)
-        setSelectedLogoUrl(active?.filePath || COMPANY_CONFIG[company as CompanyKey]?.logo || '')
-      })
-      .catch(() => {})
+        setSelectedLogoUrl(active?.filePath || COMPANY_CONFIG[company]?.logo || '')
+      }).catch(() => {})
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formValues.company])
 
-  // Foto-Upload
-  const handleFileRead = useCallback((file: File, field: 'photoUrl' | 'bannerUrl') => {
+  const handleFileRead = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return
     const reader = new FileReader()
-    reader.onload = (e) => setValue(field, e.target?.result as string)
+    reader.onload = (e) => setValue('photoUrl', e.target?.result as string)
     reader.readAsDataURL(file)
   }, [setValue])
-
-  const handlePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) handleFileRead(e.target.files[0], 'photoUrl')
-  }, [handleFileRead])
-
-  const handleBannerChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) handleFileRead(e.target.files[0], 'bannerUrl')
-  }, [handleFileRead])
 
   const handleCopyHTML = useCallback(async () => {
     const html = generateSignatureHTMLSync(signatureData, standorte, window.location.origin)
@@ -268,10 +325,16 @@ export default function SignaturenPage() {
 
   const handleSave = useCallback(async (data: FormValues) => {
     try {
+      const payload = {
+        ...data,
+        banners: JSON.stringify(banners),
+        legalCompanies: JSON.stringify(legalCompanies),
+        logoUrl: selectedLogoUrl || null,
+      }
       const res = await fetch('/api/signatures', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       })
       if (res.ok) {
         setSaved(true)
@@ -280,7 +343,7 @@ export default function SignaturenPage() {
         setSavedListOpen(true)
       }
     } catch { /* ignore */ }
-  }, [loadSavedSignatures])
+  }, [loadSavedSignatures, banners, legalCompanies, selectedLogoUrl])
 
   const handleLoadSignature = useCallback((sig: SavedSignature) => {
     reset({
@@ -292,18 +355,18 @@ export default function SignaturenPage() {
       phone: sig.phone || '',
       fax: sig.fax || '',
       mobile: sig.mobile || '',
+      whatsapp: sig.whatsapp || '',
       email: sig.email,
       website: sig.website || '',
       photoUrl: sig.photoUrl || '',
-      bannerUrl: sig.bannerUrl || '',
       showStandorte: sig.showStandorte !== false,
-      showLegalFooter: sig.showLegalFooter !== false,
       street: sig.street || '',
       zipCity: sig.zipCity || '',
-      whatsapp: sig.whatsapp || '',
       zoomLink: sig.zoomLink || '',
     })
     if (sig.logoUrl) setSelectedLogoUrl(sig.logoUrl)
+    try { if (sig.banners) setBanners(JSON.parse(sig.banners)) } catch { setBanners([]) }
+    try { if (sig.legalCompanies) setLegalCompanies(JSON.parse(sig.legalCompanies)) } catch { setLegalCompanies([sig.company as CompanyKey]) }
   }, [reset])
 
   const handleDeleteSignature = useCallback(async (id: string) => {
@@ -311,12 +374,16 @@ export default function SignaturenPage() {
     try {
       const res = await fetch(`/api/signatures?id=${id}`, { method: 'DELETE' })
       if (res.ok) await loadSavedSignatures()
-    } catch { /* ignore */ } finally {
-      setDeletingId(null)
-    }
+    } catch { /* ignore */ } finally { setDeletingId(null) }
   }, [loadSavedSignatures])
 
   const inputClass = "w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 focus:border-zinc-300 transition-all"
+
+  function toggleLegalCompany(key: CompanyKey) {
+    setLegalCompanies(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    )
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -327,10 +394,8 @@ export default function SignaturenPage() {
             <h1 className="text-zinc-900 text-2xl font-bold tracking-tight">E-Mail Signatur Generator</h1>
             <p className="text-zinc-500 text-sm mt-0.5">Erstelle deine professionelle E-Mail-Signatur</p>
           </div>
-          <Link
-            href="/signaturen/anleitung"
-            className="flex items-center gap-2 bg-[#DCFF0C] text-zinc-900 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#c8ec00] transition-colors"
-          >
+          <Link href="/signaturen/anleitung"
+            className="flex items-center gap-2 bg-[#DCFF0C] text-zinc-900 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#c8ec00] transition-colors">
             <BookOpen size={16} />
             Outlook-Anleitung
           </Link>
@@ -344,15 +409,10 @@ export default function SignaturenPage() {
             { id: 'generator', label: 'Generator', icon: Pen },
             { id: 'anleitung', label: 'Outlook-Anleitung', icon: BookOpen },
           ] as const).map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id)}
+            <button key={id} onClick={() => setActiveTab(id)}
               className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === id
-                  ? 'bg-[#DCFF0C] text-zinc-900 shadow-sm'
-                  : 'text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
+                activeTab === id ? 'bg-[#DCFF0C] text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800'
+              }`}>
               <Icon size={15} />
               {label}
             </button>
@@ -362,23 +422,16 @@ export default function SignaturenPage() {
 
       <AnimatePresence mode="wait">
         {activeTab === 'generator' && (
-          <motion.div
-            key="generator"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="max-w-6xl mx-auto px-6 py-6 space-y-6"
-          >
+          <motion.div key="generator"
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}
+            className="max-w-6xl mx-auto px-6 py-6 space-y-6">
 
             {/* Gespeicherte Signaturen */}
             {savedSignatures.length > 0 && (
               <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setSavedListOpen(!savedListOpen)}
-                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-zinc-50 transition-colors"
-                >
+                <button type="button" onClick={() => setSavedListOpen(!savedListOpen)}
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-zinc-50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-6 rounded-full bg-zinc-300" />
                     <h2 className="font-semibold text-zinc-800">
@@ -392,38 +445,23 @@ export default function SignaturenPage() {
                 </button>
                 <AnimatePresence>
                   {savedListOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                       <div className="border-t border-zinc-100 divide-y divide-zinc-50">
-                        {savedSignatures.map((sig) => (
+                        {savedSignatures.map(sig => (
                           <div key={sig.id} className="flex items-center gap-4 px-6 py-3 hover:bg-zinc-50 transition-colors">
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-zinc-800 truncate">
-                                {sig.name || `${sig.firstName} ${sig.lastName}`}
-                              </p>
-                              <p className="text-xs text-zinc-400 truncate">
-                                {sig.position} · {sig.email}
-                              </p>
+                              <p className="text-sm font-medium text-zinc-800 truncate">{sig.name || `${sig.firstName} ${sig.lastName}`}</p>
+                              <p className="text-xs text-zinc-400 truncate">{sig.position} · {sig.email}</p>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => handleLoadSignature(sig)}
-                                className="flex items-center gap-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 transition-all"
-                              >
+                              <button type="button" onClick={() => handleLoadSignature(sig)}
+                                className="flex items-center gap-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 transition-all">
                                 <FolderOpen size={13} /> Laden
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteSignature(sig.id)}
+                              <button type="button" onClick={() => handleDeleteSignature(sig.id)}
                                 disabled={deletingId === sig.id}
-                                className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-red-500 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-red-200 transition-all disabled:opacity-50"
-                              >
+                                className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-red-500 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-red-200 transition-all disabled:opacity-50">
                                 <Trash2 size={13} />
                                 {deletingId === sig.id ? '...' : 'Löschen'}
                               </button>
@@ -437,7 +475,7 @@ export default function SignaturenPage() {
               </div>
             )}
 
-            {/* Formular */}
+            {/* ── Formular ── */}
             <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-3">
                 <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
@@ -449,7 +487,7 @@ export default function SignaturenPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Firma <span className="text-red-500">*</span>
+                      Firma (Absender) <span className="text-red-500">*</span>
                     </label>
                     <select {...register('company')} className={inputClass}>
                       <option value="raederlogistik">Räderlogistik Franchise GmbH</option>
@@ -457,34 +495,17 @@ export default function SignaturenPage() {
                       <option value="rtg">RTG GmbH</option>
                     </select>
                   </div>
-                  <div className="flex flex-col gap-3 justify-end pb-0.5">
+                  <div className="flex items-end pb-0.5">
                     <label className="flex items-center gap-3 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        {...register('showStandorte')}
-                        className="w-4 h-4 rounded accent-[#DCFF0C]"
-                      />
+                      <input type="checkbox" {...register('showStandorte')} className="w-4 h-4 rounded accent-[#DCFF0C]" />
                       <div>
                         <p className="text-sm font-medium text-zinc-700 flex items-center gap-1.5">
                           <MapPin size={14} className="text-zinc-400" />
                           Standorte anzeigen
                         </p>
                         <p className="text-xs text-zinc-400 mt-0.5">
-                          {standorte.length > 0
-                            ? `${standorte.length} Standorte geladen`
-                            : 'Fallback-Liste wird verwendet'}
+                          {standorte.length > 0 ? `${standorte.length} Standorte geladen` : 'Fallback-Liste wird verwendet'}
                         </p>
-                      </div>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        {...register('showLegalFooter')}
-                        className="w-4 h-4 rounded accent-[#DCFF0C]"
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-zinc-700">Rechtliche Angaben anzeigen</p>
-                        <p className="text-xs text-zinc-400 mt-0.5">USt.-ID, Amtsgericht, Steuernummer</p>
                       </div>
                     </label>
                   </div>
@@ -499,16 +520,10 @@ export default function SignaturenPage() {
                     </label>
                     <div className="flex gap-3 flex-wrap">
                       {availableLogos.map(logo => (
-                        <button
-                          key={logo.id}
-                          type="button"
-                          onClick={() => setSelectedLogoUrl(logo.filePath)}
+                        <button key={logo.id} type="button" onClick={() => setSelectedLogoUrl(logo.filePath)}
                           className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg border-2 transition-all ${
-                            selectedLogoUrl === logo.filePath
-                              ? 'border-[#DCFF0C] bg-[#DCFF0C]/5'
-                              : 'border-zinc-200 hover:border-zinc-300'
-                          }`}
-                        >
+                            selectedLogoUrl === logo.filePath ? 'border-[#DCFF0C] bg-[#DCFF0C]/5' : 'border-zinc-200 hover:border-zinc-300'
+                          }`}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={logo.filePath} alt={logo.label} className="h-10 w-auto object-contain" />
                           <span className="text-xs text-zinc-600">{logo.label}</span>
@@ -521,23 +536,17 @@ export default function SignaturenPage() {
                 {/* Name + Position */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Vorname <span className="text-red-500">*</span>
-                    </label>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Vorname <span className="text-red-500">*</span></label>
                     <input {...register('firstName')} placeholder="Max" className={inputClass} />
                     {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Nachname <span className="text-red-500">*</span>
-                    </label>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Nachname <span className="text-red-500">*</span></label>
                     <input {...register('lastName')} placeholder="Mustermann" className={inputClass} />
                     {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Position <span className="text-red-500">*</span>
-                    </label>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Position <span className="text-red-500">*</span></label>
                     <input {...register('position')} placeholder="Vertriebsleiter" className={inputClass} />
                     {errors.position && <p className="text-red-500 text-xs mt-1">{errors.position.message}</p>}
                   </div>
@@ -581,10 +590,9 @@ export default function SignaturenPage() {
 
                 {/* Adresse + Zoom */}
                 <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-4 rounded-full bg-zinc-200" />
-                    <p className="text-sm font-medium text-zinc-500">Standort-Adresse <span className="font-normal text-zinc-400">(optional – überschreibt Firmenvorgabe)</span></p>
-                  </div>
+                  <p className="text-sm font-medium text-zinc-500 mb-3">
+                    Standort-Adresse <span className="font-normal text-zinc-400">(optional – überschreibt Firmenvorgabe für Franchise-Standorte)</span>
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-zinc-700 mb-1.5">Straße</label>
@@ -592,7 +600,7 @@ export default function SignaturenPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-zinc-700 mb-1.5">PLZ + Ort</label>
-                      <input {...register('zipCity')} placeholder="z. B. 40721 Hilden" className={inputClass} />
+                      <input {...register('zipCity')} placeholder="40721 Hilden" className={inputClass} />
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-zinc-700 mb-1.5">
@@ -603,48 +611,57 @@ export default function SignaturenPage() {
                   </div>
                 </div>
 
-                {/* Fotos / Banner */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <UploadField
-                    field="photoUrl"
-                    label="Profilfoto"
-                    inputRef={photoInputRef}
-                    value={formValues.photoUrl || ''}
-                    isDragging={isDraggingPhoto}
-                    onDragOver={() => setIsDraggingPhoto(true)}
-                    onDragLeave={() => setIsDraggingPhoto(false)}
-                    onDrop={(e) => { e.preventDefault(); setIsDraggingPhoto(false); if (e.dataTransfer.files?.[0]) handleFileRead(e.dataTransfer.files[0], 'photoUrl') }}
-                    onChange={handlePhotoChange}
-                    onRemove={() => { setValue('photoUrl', ''); if (photoInputRef.current) photoInputRef.current.value = '' }}
-                    previewRound
-                  />
-                  <UploadField
-                    field="bannerUrl"
-                    label="Banner-Bild (z. B. Premio)"
-                    inputRef={bannerInputRef}
-                    value={formValues.bannerUrl || ''}
-                    isDragging={isDraggingBanner}
-                    onDragOver={() => setIsDraggingBanner(true)}
-                    onDragLeave={() => setIsDraggingBanner(false)}
-                    onDrop={(e) => { e.preventDefault(); setIsDraggingBanner(false); if (e.dataTransfer.files?.[0]) handleFileRead(e.dataTransfer.files[0], 'bannerUrl') }}
-                    onChange={handleBannerChange}
-                    onRemove={() => { setValue('bannerUrl', ''); if (bannerInputRef.current) bannerInputRef.current.value = '' }}
-                  />
+                {/* Profilfoto */}
+                <PhotoUploadField
+                  inputRef={photoInputRef}
+                  value={formValues.photoUrl || ''}
+                  isDragging={isDraggingPhoto}
+                  onDragOver={() => setIsDraggingPhoto(true)}
+                  onDragLeave={() => setIsDraggingPhoto(false)}
+                  onDrop={e => { e.preventDefault(); setIsDraggingPhoto(false); if (e.dataTransfer.files?.[0]) handleFileRead(e.dataTransfer.files[0]) }}
+                  onChange={e => { if (e.target.files?.[0]) handleFileRead(e.target.files[0]) }}
+                  onRemove={() => { setValue('photoUrl', ''); if (photoInputRef.current) photoInputRef.current.value = '' }}
+                />
+
+                {/* Banner */}
+                <BannerList banners={banners} onChange={setBanners} />
+
+                {/* Rechtliche Angaben */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-5 rounded-full bg-[#DCFF0C]" />
+                    <p className="text-sm font-semibold text-zinc-800">Rechtliche Angaben</p>
+                    <span className="text-xs text-zinc-400">Welche Firmen sollen im Footer erscheinen?</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {ALL_COMPANIES.map(({ key, label }) => {
+                      const c = COMPANY_CONFIG[key]
+                      const checked = legalCompanies.includes(key)
+                      return (
+                        <label key={key}
+                          className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                            checked ? 'border-[#DCFF0C] bg-[#DCFF0C]/5' : 'border-zinc-200 hover:border-zinc-300'
+                          }`}>
+                          <input type="checkbox" checked={checked} onChange={() => toggleLegalCompany(key)}
+                            className="mt-0.5 w-4 h-4 rounded accent-[#DCFF0C] shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-zinc-800">{label}</p>
+                            <p className="text-xs text-zinc-400 mt-0.5">{c.legal.ceo}</p>
+                            <p className="text-xs text-zinc-400">{c.legal.vatId}</p>
+                          </div>
+                        </label>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 {/* Speichern */}
                 <div className="pt-4 border-t border-zinc-100 flex items-center gap-4 flex-wrap">
                   <div className="flex-1 min-w-[200px]">
-                    <input
-                      {...register('name')}
-                      placeholder="Signatur-Name (optional)"
-                      className={inputClass}
-                    />
+                    <input {...register('name')} placeholder="Signatur-Name (optional)" className={inputClass} />
                   </div>
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 text-white text-sm font-medium rounded-lg hover:bg-zinc-700 transition-colors whitespace-nowrap"
-                  >
+                  <button type="submit"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-zinc-700 text-white text-sm font-medium rounded-lg hover:bg-zinc-600 transition-colors whitespace-nowrap">
                     {saved ? <Check size={15} className="text-[#DCFF0C]" /> : <Save size={15} />}
                     {saved ? 'Gespeichert!' : 'Signatur speichern'}
                   </button>
@@ -664,7 +681,6 @@ export default function SignaturenPage() {
 
               <div className="bg-zinc-100 p-4">
                 <div className="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
-                  {/* E-Mail-Header */}
                   <div className="border-b border-zinc-100 px-5 py-4 space-y-2">
                     <div className="flex gap-3 text-sm">
                       <span className="text-zinc-400 w-14 shrink-0">Von</span>
@@ -682,8 +698,6 @@ export default function SignaturenPage() {
                       <span className="text-zinc-700">Ihre Anfrage</span>
                     </div>
                   </div>
-
-                  {/* E-Mail-Body */}
                   <div className="px-5 py-5">
                     <p className="text-sm text-zinc-600 mb-6">
                       Sehr geehrte Damen und Herren,<br /><br />
@@ -696,18 +710,13 @@ export default function SignaturenPage() {
                 </div>
               </div>
 
-              {/* Export */}
               <div className="px-6 py-5 border-t border-zinc-100 flex items-center justify-between gap-4 flex-wrap">
                 <p className="text-sm text-zinc-500">
                   HTML-Code kopieren und in Outlook als Signatur einfügen.
-                  <Link href="/signaturen/anleitung" className="text-zinc-800 font-medium ml-1 hover:underline">
-                    Anleitung →
-                  </Link>
+                  <Link href="/signaturen/anleitung" className="text-zinc-800 font-medium ml-1 hover:underline">Anleitung →</Link>
                 </p>
-                <button
-                  onClick={handleCopyHTML}
-                  className="flex items-center gap-2 bg-[#DCFF0C] text-[#1c1c1c] font-semibold py-2.5 px-6 rounded-xl text-sm hover:bg-[#c8ec00] active:scale-[0.98] transition-all whitespace-nowrap"
-                >
+                <button onClick={handleCopyHTML}
+                  className="flex items-center gap-2 bg-[#DCFF0C] text-zinc-900 font-semibold py-2.5 px-6 rounded-xl text-sm hover:bg-[#c8ec00] active:scale-[0.98] transition-all whitespace-nowrap">
                   <AnimatePresence mode="wait">
                     {copied ? (
                       <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
@@ -726,14 +735,10 @@ export default function SignaturenPage() {
         )}
 
         {activeTab === 'anleitung' && (
-          <motion.div
-            key="anleitung"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="max-w-3xl mx-auto px-6 py-8"
-          >
+          <motion.div key="anleitung"
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}
+            className="max-w-3xl mx-auto px-6 py-8">
             <AnleitungContent />
           </motion.div>
         )}
@@ -777,7 +782,7 @@ function AnleitungContent() {
           <ol className="divide-y divide-zinc-100">
             {steps.map(({ title: t, desc }, i) => (
               <li key={i} className="flex gap-5 px-6 py-4">
-                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#DCFF0C] text-[#1c1c1c] flex items-center justify-center font-bold text-sm mt-0.5">{i + 1}</span>
+                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#DCFF0C] text-zinc-900 flex items-center justify-center font-bold text-sm mt-0.5">{i + 1}</span>
                 <div>
                   <p className="font-semibold text-zinc-800 text-sm">{t}</p>
                   <p className="text-zinc-500 text-sm mt-0.5">{desc}</p>

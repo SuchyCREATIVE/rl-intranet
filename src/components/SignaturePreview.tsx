@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { SignatureData, COMPANY_CONFIG } from '@/lib/signature-export'
+import { SignatureData, COMPANY_CONFIG, CompanyKey } from '@/lib/signature-export'
 
 const FALLBACK_STANDORTE = [
   'Augsburg', 'Dresden', 'Erkrath', 'Hamburg', 'Hermsdorf',
@@ -10,7 +10,6 @@ const FALLBACK_STANDORTE = [
 ]
 
 const Y  = '#DCFF0C'
-const DB = '#1c1c1c'
 const LB = '#efefef'
 const WH = '#ffffff'
 const TD = '#222222'
@@ -29,6 +28,7 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
   const zipCity = data.zipCity || company.city
   const cities  = standorte.length > 0 ? standorte : FALLBACK_STANDORTE
   const logoSrc = data.logoUrl || company.logo
+  const legalKeys: CompanyKey[] = data.legalCompanies ?? [data.company]
 
   const initials = (data.firstName.charAt(0) + data.lastName.charAt(0)).toUpperCase()
 
@@ -40,33 +40,37 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
     <table cellPadding={0} cellSpacing={0} border={0} width={600}
       style={{ maxWidth: 600, width: '100%', borderCollapse: 'collapse', fontSize: 0 }}>
       <tbody>
-
-        {/* ── Hauptzeile ── */}
         <tr>
 
-          {/* Linke Spalte: Dunkel, Foto oder Initialen */}
+          {/* Linke Spalte: Weiß + Reifenspuren als Hintergrund */}
           <td width={155} style={{
-            width: 155, backgroundColor: DB,
-            verticalAlign: 'middle', textAlign: 'center',
-            padding: '22px 14px',
+            width: 155,
+            backgroundColor: WH,
+            backgroundImage: 'url(/logos/reifenspuren.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center center',
+            backgroundRepeat: 'no-repeat',
+            verticalAlign: 'middle',
+            textAlign: 'center',
+            padding: '22px 12px',
           }}>
             {data.photoUrl ? (
-              <div style={{ display: 'inline-block', backgroundColor: Y, borderRadius: 56, padding: 4, lineHeight: 0 }}>
+              <div style={{ display: 'inline-block', backgroundColor: Y, borderRadius: 60, padding: 4, lineHeight: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={data.photoUrl}
-                  width={96} height={96}
+                  width={100} height={100}
                   alt={`${data.firstName} ${data.lastName}`}
-                  style={{ display: 'block', width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
+                  style={{ display: 'block', width: 100, height: 100, borderRadius: '50%', objectFit: 'cover' }}
                 />
               </div>
             ) : (
-              <div style={{ display: 'inline-block', backgroundColor: Y, borderRadius: 56, padding: 4, lineHeight: 0 }}>
+              <div style={{ display: 'inline-block', backgroundColor: Y, borderRadius: 60, padding: 4, lineHeight: 0 }}>
                 <div style={{
-                  width: 96, height: 96, borderRadius: '50%',
-                  backgroundColor: DB, fontFamily: F,
-                  fontSize: 32, fontWeight: 'bold', color: Y,
-                  textAlign: 'center', lineHeight: '96px',
+                  width: 100, height: 100, borderRadius: '50%',
+                  backgroundColor: WH, fontFamily: F,
+                  fontSize: 34, fontWeight: 'bold', color: '#555555',
+                  textAlign: 'center', lineHeight: '100px',
                   display: 'block',
                 }}>
                   {initials}
@@ -78,16 +82,13 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
           {/* Mittlere Spalte: Kontaktdaten */}
           <td style={{ backgroundColor: LB, verticalAlign: 'top', padding: '20px 20px 20px 22px' }}>
 
-            {/* Name */}
             <p style={{ fontFamily: F, fontSize: 16, fontWeight: 'bold', color: TD, margin: 0, lineHeight: 1.2 }}>
               {data.firstName} {data.lastName}
             </p>
-            {/* Position */}
             <p style={{ fontFamily: F, fontSize: 12, fontStyle: 'italic', color: TG, margin: '3px 0 0 0', lineHeight: 1.2 }}>
               {data.position}
             </p>
 
-            {/* Kontaktzeilen */}
             <table cellPadding={0} cellSpacing={0} border={0} style={{ marginTop: 14 }}>
               <tbody>
                 {data.phone && (
@@ -137,76 +138,78 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
               </tbody>
             </table>
 
-            {/* Firmenadresse */}
             <table cellPadding={0} cellSpacing={0} border={0} style={{ marginTop: 14 }}>
               <tbody>
-                <tr><td style={{ fontFamily: F, fontSize: 12, color: TD, paddingBottom: 1, fontWeight: 'bold' }}>{company.legalName}</td></tr>
-                <tr><td style={{ fontFamily: F, fontSize: 11, color: TG, paddingBottom: 5, fontStyle: 'italic' }}>{company.descriptor}</td></tr>
+                <tr><td style={{ fontFamily: F, fontSize: 12, color: TD, fontWeight: 'bold', paddingBottom: 1 }}>{company.legalName}</td></tr>
+                <tr><td style={{ fontFamily: F, fontSize: 11, color: TG, fontStyle: 'italic', paddingBottom: 5 }}>{company.descriptor}</td></tr>
                 <tr><td style={{ fontFamily: F, fontSize: 12, color: TG, paddingBottom: 1 }}>{street}</td></tr>
                 <tr><td style={{ fontFamily: F, fontSize: 12, color: TG }}>{zipCity}</td></tr>
               </tbody>
             </table>
 
-            {/* Website */}
             <p style={{ fontFamily: F, fontSize: 12, margin: '12px 0 0 0' }}>
               <a href={websiteUrl} target="_blank" rel="noopener noreferrer" style={{ color: TG, textDecoration: 'none' }}>{websiteUrl}</a>
             </p>
 
           </td>
 
-          {/* Rechte Spalte: Logo (weiß) */}
+          {/* Rechte Spalte: Logo */}
           <td width={130} style={{
             width: 130, backgroundColor: WH,
             verticalAlign: 'top', textAlign: 'center',
-            padding: '20px 14px 20px 16px',
+            padding: '20px 14px',
           }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={logoSrc}
-              width={98}
-              alt={company.legalName}
-              style={{ display: 'block', width: 98, height: 'auto', margin: '0 auto' }}
-            />
+            <img src={logoSrc} width={98} alt={company.legalName}
+              style={{ display: 'block', width: 98, height: 'auto', margin: '0 auto' }} />
           </td>
 
-          {/* Gelber Akzentstreifen rechts */}
+          {/* Gelber Akzentstreifen */}
           <td width={5} style={{ width: 5, minWidth: 5, backgroundColor: Y }} />
 
         </tr>
 
-        {/* ── Standorte-Zeile ── */}
+        {/* Standorte */}
         {data.showStandorte !== false && (
           <tr>
-            <td colSpan={4} style={{ backgroundColor: DB, padding: '9px 18px', borderTop: `3px solid ${Y}` }}>
-              <span style={{ fontFamily: F, fontSize: 11, color: '#999999' }}>
-                <strong style={{ color: Y, fontWeight: 700 }}>Für Sie vor Ort:&nbsp;</strong>
+            <td colSpan={4} style={{ backgroundColor: Y, padding: '9px 18px', borderTop: '1px solid #c8d400' }}>
+              <span style={{ fontFamily: F, fontSize: 11, color: '#111111' }}>
+                <strong style={{ fontWeight: 700 }}>Für Sie vor Ort:&nbsp;</strong>
                 {cities.join('\u00a0\u00a0|\u00a0\u00a0')}
               </span>
             </td>
           </tr>
         )}
 
-        {/* ── Legal Footer ── */}
-        {data.showLegalFooter !== false && (
-          <tr>
-            <td colSpan={4} style={{ backgroundColor: '#f9f9f9', padding: '8px 18px', borderTop: '1px solid #e0e0e0' }}>
-              <span style={{ fontFamily: F, fontSize: 10, color: '#aaaaaa', lineHeight: 1.4, display: 'block' }}>
-                {company.legalName}&nbsp;&nbsp;·&nbsp;&nbsp;Geschäftsführer: {company.legal.ceo}&nbsp;&nbsp;·&nbsp;&nbsp;Sitz der Gesellschaft: Hilden&nbsp;&nbsp;·&nbsp;&nbsp;{company.legal.court}&nbsp;&nbsp;·&nbsp;&nbsp;Steuernummer: {company.legal.taxNo}&nbsp;&nbsp;·&nbsp;&nbsp;USt.-ID: {company.legal.vatId}
-              </span>
-            </td>
-          </tr>
-        )}
+        {/* Rechtliche Angaben (je Firma eine Zeile) */}
+        {legalKeys.map(key => {
+          const c = COMPANY_CONFIG[key]
+          return (
+            <tr key={key}>
+              <td colSpan={4} style={{ backgroundColor: '#f9f9f9', padding: '6px 18px', borderTop: '1px solid #e8e8e8' }}>
+                <span style={{ fontFamily: F, fontSize: 10, color: '#aaaaaa', lineHeight: 1.4, display: 'block' }}>
+                  <strong style={{ color: '#888888' }}>{c.legalName}</strong>
+                  &nbsp;&nbsp;·&nbsp;&nbsp;Geschäftsführer: {c.legal.ceo}
+                  &nbsp;&nbsp;·&nbsp;&nbsp;Sitz der Gesellschaft: Hilden
+                  &nbsp;&nbsp;·&nbsp;&nbsp;{c.legal.court}
+                  &nbsp;&nbsp;·&nbsp;&nbsp;Steuernummer: {c.legal.taxNo}
+                  &nbsp;&nbsp;·&nbsp;&nbsp;USt.-ID: {c.legal.vatId}
+                </span>
+              </td>
+            </tr>
+          )
+        })}
 
-        {/* ── Banner ── */}
-        {data.bannerUrl && (
-          <tr>
+        {/* Banner (mehrere) */}
+        {(data.banners ?? []).map((url, i) => (
+          <tr key={i}>
             <td colSpan={4} style={{ padding: 0 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={data.bannerUrl} alt="Banner"
+              <img src={url} alt={`Banner ${i + 1}`}
                 style={{ display: 'block', maxWidth: 600, width: '100%', height: 'auto' }} />
             </td>
           </tr>
-        )}
+        ))}
 
       </tbody>
     </table>
