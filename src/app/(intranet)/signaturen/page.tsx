@@ -36,10 +36,12 @@ const schema = z.object({
   photoUrl: z.string().optional(),
   bannerUrl: z.string().optional(),
   showStandorte: z.boolean().optional(),
+  showLegalFooter: z.boolean().optional(),
   // Individuelle Adresse (überschreibt Firmenwert für Franchise-Standorte)
   street: z.string().optional(),
   zipCity: z.string().optional(),
-  // Zoom-Meeting-Link
+  // Zusätzliche Kontaktfelder
+  whatsapp: z.string().optional(),
   zoomLink: z.string().optional(),
 })
 
@@ -61,8 +63,10 @@ interface SavedSignature {
   bannerUrl?: string | null
   logoUrl?: string | null
   showStandorte?: boolean
+  showLegalFooter?: boolean
   street?: string | null
   zipCity?: string | null
+  whatsapp?: string | null
   zoomLink?: string | null
 }
 
@@ -168,8 +172,10 @@ export default function SignaturenPage() {
       photoUrl: '',
       bannerUrl: '',
       showStandorte: true,
+      showLegalFooter: true,
       street: '',
       zipCity: '',
+      whatsapp: '',
       zoomLink: '',
     },
   })
@@ -190,8 +196,10 @@ export default function SignaturenPage() {
     bannerUrl: formValues.bannerUrl || undefined,
     logoUrl: selectedLogoUrl || undefined,
     showStandorte: formValues.showStandorte,
+    showLegalFooter: formValues.showLegalFooter,
     street: formValues.street || undefined,
     zipCity: formValues.zipCity || undefined,
+    whatsapp: formValues.whatsapp || undefined,
     zoomLink: formValues.zoomLink || undefined,
   }
 
@@ -289,8 +297,10 @@ export default function SignaturenPage() {
       photoUrl: sig.photoUrl || '',
       bannerUrl: sig.bannerUrl || '',
       showStandorte: sig.showStandorte !== false,
+      showLegalFooter: sig.showLegalFooter !== false,
       street: sig.street || '',
       zipCity: sig.zipCity || '',
+      whatsapp: sig.whatsapp || '',
       zoomLink: sig.zoomLink || '',
     })
     if (sig.logoUrl) setSelectedLogoUrl(sig.logoUrl)
@@ -447,7 +457,7 @@ export default function SignaturenPage() {
                       <option value="rtg">RTG GmbH</option>
                     </select>
                   </div>
-                  <div className="flex items-end pb-0.5">
+                  <div className="flex flex-col gap-3 justify-end pb-0.5">
                     <label className="flex items-center gap-3 cursor-pointer select-none">
                       <input
                         type="checkbox"
@@ -464,6 +474,17 @@ export default function SignaturenPage() {
                             ? `${standorte.length} Standorte geladen`
                             : 'Fallback-Liste wird verwendet'}
                         </p>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        {...register('showLegalFooter')}
+                        className="w-4 h-4 rounded accent-[#DCFF0C]"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-zinc-700">Rechtliche Angaben anzeigen</p>
+                        <p className="text-xs text-zinc-400 mt-0.5">USt.-ID, Amtsgericht, Steuernummer</p>
                       </div>
                     </label>
                   </div>
@@ -526,15 +547,15 @@ export default function SignaturenPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div>
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">Telefon</label>
-                    <input {...register('phone')} placeholder="+49 2103 123456" className={inputClass} />
+                    <input {...register('phone')} placeholder="02103-9079441" className={inputClass} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">Mobil</label>
-                    <input {...register('mobile')} placeholder="+49 170 1234567" className={inputClass} />
+                    <input {...register('mobile')} placeholder="0170 1234567" className={inputClass} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">Fax</label>
-                    <input {...register('fax')} placeholder="+49 2103 123457" className={inputClass} />
+                    <input {...register('fax')} placeholder="02103-398111" className={inputClass} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">
@@ -542,6 +563,12 @@ export default function SignaturenPage() {
                     </label>
                     <input {...register('email')} type="email" placeholder="m.mustermann@raederlogistik.de" className={inputClass} />
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                      WhatsApp <span className="text-zinc-400 font-normal">(optional)</span>
+                    </label>
+                    <input {...register('whatsapp')} placeholder="0170 3698733" className={inputClass} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">
