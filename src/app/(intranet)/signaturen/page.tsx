@@ -64,10 +64,10 @@ interface SavedSignature {
   email: string
   website?: string | null
   photoUrl?: string | null
-  banners?: string | null      // JSON
+  banners?: string | null
   logoUrl?: string | null
   showStandorte?: boolean
-  legalCompanies?: string | null  // JSON
+  legalCompanies?: string | null
   street?: string | null
   zipCity?: string | null
   zoomLink?: string | null
@@ -85,7 +85,6 @@ function PhotoUploadField({
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onRemove: () => void
 }) {
-  const inputClass = "w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#DCFF0C]/50 transition-all"
   return (
     <div>
       <label className="block text-sm font-medium text-zinc-700 mb-1.5">
@@ -115,9 +114,6 @@ function PhotoUploadField({
           <span className="text-xs text-zinc-400">JPG, PNG · Drag & Drop oder Klick</span>
         </button>
       )}
-      {/* Unsichtbar für TS-Zufriedenheit */}
-      <input type="text" className="hidden" value={value} readOnly aria-hidden />
-      <span className="hidden">{inputClass}</span>
     </div>
   )
 }
@@ -127,83 +123,53 @@ function BannerList({ banners, onChange }: { banners: string[]; onChange: (b: st
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
-  function readFile(file: File, index?: number) {
+  function readFile(file: File) {
     if (!file.type.startsWith('image/')) return
     const reader = new FileReader()
-    reader.onload = (e) => {
-      const url = e.target?.result as string
-      if (index !== undefined) {
-        const next = [...banners]
-        next[index] = url
-        onChange(next)
-      } else {
-        onChange([...banners, url])
-      }
-    }
+    reader.onload = (e) => onChange([...banners, e.target?.result as string])
     reader.readAsDataURL(file)
   }
 
   function moveUp(i: number) {
     if (i === 0) return
-    const next = [...banners]
-    ;[next[i - 1], next[i]] = [next[i], next[i - 1]]
-    onChange(next)
+    const next = [...banners]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; onChange(next)
   }
-
   function moveDown(i: number) {
     if (i === banners.length - 1) return
-    const next = [...banners]
-    ;[next[i], next[i + 1]] = [next[i + 1], next[i]]
-    onChange(next)
+    const next = [...banners]; [next[i], next[i + 1]] = [next[i + 1], next[i]]; onChange(next)
   }
-
-  function remove(i: number) {
-    onChange(banners.filter((_, idx) => idx !== i))
-  }
+  function remove(i: number) { onChange(banners.filter((_, idx) => idx !== i)) }
 
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-zinc-700">
         Banner-Bilder <span className="text-zinc-400 font-normal">(optional, mehrere möglich – z. B. Premio)</span>
       </label>
-
       {banners.map((url, i) => (
         <div key={i} className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-200 rounded-lg">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt={`Banner ${i + 1}`} className="h-12 w-auto max-w-[120px] object-contain rounded border border-zinc-100" />
+          <img src={url} alt={`Banner ${i + 1}`} className="h-10 w-auto max-w-[100px] object-contain rounded border border-zinc-100" />
           <div className="flex-1 text-xs text-zinc-400">Banner {i + 1}</div>
           <div className="flex items-center gap-1">
             <button type="button" onClick={() => moveUp(i)} disabled={i === 0}
-              className="p-1.5 rounded hover:bg-zinc-200 disabled:opacity-30 transition-colors" title="Nach oben">
-              <ArrowUp size={13} />
-            </button>
+              className="p-1.5 rounded hover:bg-zinc-200 disabled:opacity-30 transition-colors"><ArrowUp size={13} /></button>
             <button type="button" onClick={() => moveDown(i)} disabled={i === banners.length - 1}
-              className="p-1.5 rounded hover:bg-zinc-200 disabled:opacity-30 transition-colors" title="Nach unten">
-              <ArrowDown size={13} />
-            </button>
+              className="p-1.5 rounded hover:bg-zinc-200 disabled:opacity-30 transition-colors"><ArrowDown size={13} /></button>
             <button type="button" onClick={() => remove(i)}
-              className="p-1.5 rounded hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors" title="Entfernen">
-              <X size={13} />
-            </button>
+              className="p-1.5 rounded hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"><X size={13} /></button>
           </div>
         </div>
       ))}
-
-      {/* Banner hinzufügen */}
       <input ref={inputRef} type="file" accept="image/*" className="hidden"
         onChange={e => { if (e.target.files?.[0]) { readFile(e.target.files[0]); e.target.value = '' } }} />
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
+      <button type="button" onClick={() => inputRef.current?.click()}
         onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={e => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files?.[0]) readFile(e.dataTransfer.files[0]) }}
-        className={`w-full h-16 flex items-center justify-center gap-2 border-2 border-dashed rounded-lg text-sm transition-all ${
+        className={`w-full h-14 flex items-center justify-center gap-2 border-2 border-dashed rounded-lg text-sm transition-all ${
           isDragging ? 'border-[#DCFF0C] bg-[#DCFF0C]/5 text-zinc-800' : 'border-zinc-200 text-zinc-500 hover:border-[#DCFF0C]/50'
-        }`}
-      >
-        <Plus size={15} />
-        Banner hinzufügen
+        }`}>
+        <Plus size={15} /> Banner hinzufügen
       </button>
     </div>
   )
@@ -221,9 +187,7 @@ export default function SignaturenPage() {
   const [standorte, setStandorte] = useState<string[]>([])
   const [availableLogos, setAvailableLogos] = useState<CompanyLogo[]>([])
   const [selectedLogoUrl, setSelectedLogoUrl] = useState<string>('')
-  // Banner als eigener State (Array)
   const [banners, setBanners] = useState<string[]>([])
-  // Rechtliche Angaben: welche Firmen anzeigen
   const [legalCompanies, setLegalCompanies] = useState<CompanyKey[]>(['raederlogistik'])
   const photoInputRef = useRef<HTMLInputElement>(null)
 
@@ -244,12 +208,8 @@ export default function SignaturenPage() {
 
   const formValues = watch()
 
-  // legalCompanies auf Firmenwechsel anpassen (Default: gewählte Firma)
   useEffect(() => {
-    setLegalCompanies(prev => {
-      if (prev.length === 0) return [formValues.company as CompanyKey]
-      return prev
-    })
+    setLegalCompanies(prev => prev.length === 0 ? [formValues.company as CompanyKey] : prev)
   }, [formValues.company])
 
   const signatureData: SignatureData = {
@@ -286,7 +246,6 @@ export default function SignaturenPage() {
       .then(d => { if (d.cities) setStandorte(d.cities) }).catch(() => {})
   }, [loadSavedSignatures])
 
-  // Logos laden wenn Firma wechselt
   useEffect(() => {
     const company = formValues.company as CompanyKey
     if (!company) return
@@ -314,10 +273,7 @@ export default function SignaturenPage() {
     } catch {
       const ta = document.createElement('textarea')
       ta.value = html
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta)
     }
     setCopied(true)
     setTimeout(() => setCopied(false), 3000)
@@ -337,32 +293,20 @@ export default function SignaturenPage() {
         body: JSON.stringify(payload),
       })
       if (res.ok) {
-        setSaved(true)
-        setTimeout(() => setSaved(false), 3000)
-        await loadSavedSignatures()
-        setSavedListOpen(true)
+        setSaved(true); setTimeout(() => setSaved(false), 3000)
+        await loadSavedSignatures(); setSavedListOpen(true)
       }
     } catch { /* ignore */ }
   }, [loadSavedSignatures, banners, legalCompanies, selectedLogoUrl])
 
   const handleLoadSignature = useCallback((sig: SavedSignature) => {
     reset({
-      name: sig.name || '',
-      company: sig.company as CompanyKey,
-      firstName: sig.firstName,
-      lastName: sig.lastName,
-      position: sig.position,
-      phone: sig.phone || '',
-      fax: sig.fax || '',
-      mobile: sig.mobile || '',
-      whatsapp: sig.whatsapp || '',
-      email: sig.email,
-      website: sig.website || '',
-      photoUrl: sig.photoUrl || '',
-      showStandorte: sig.showStandorte !== false,
-      street: sig.street || '',
-      zipCity: sig.zipCity || '',
-      zoomLink: sig.zoomLink || '',
+      name: sig.name || '', company: sig.company as CompanyKey,
+      firstName: sig.firstName, lastName: sig.lastName, position: sig.position,
+      phone: sig.phone || '', fax: sig.fax || '', mobile: sig.mobile || '',
+      whatsapp: sig.whatsapp || '', email: sig.email, website: sig.website || '',
+      photoUrl: sig.photoUrl || '', showStandorte: sig.showStandorte !== false,
+      street: sig.street || '', zipCity: sig.zipCity || '', zoomLink: sig.zoomLink || '',
     })
     if (sig.logoUrl) setSelectedLogoUrl(sig.logoUrl)
     try { if (sig.banners) setBanners(JSON.parse(sig.banners)) } catch { setBanners([]) }
@@ -389,21 +333,20 @@ export default function SignaturenPage() {
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
       <div className="bg-white border-b-4 border-[#DCFF0C]">
-        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto px-6 py-5 flex items-center justify-between">
           <div>
             <h1 className="text-zinc-900 text-2xl font-bold tracking-tight">E-Mail Signatur Generator</h1>
             <p className="text-zinc-500 text-sm mt-0.5">Erstelle deine professionelle E-Mail-Signatur</p>
           </div>
           <Link href="/signaturen/anleitung"
             className="flex items-center gap-2 bg-[#DCFF0C] text-zinc-900 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#c8ec00] transition-colors">
-            <BookOpen size={16} />
-            Outlook-Anleitung
+            <BookOpen size={16} /> Outlook-Anleitung
           </Link>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="max-w-6xl mx-auto px-6 pt-6">
+      <div className="max-w-[1600px] mx-auto px-6 pt-6">
         <div className="flex gap-1 bg-white border border-zinc-200 rounded-xl p-1 w-fit shadow-sm">
           {([
             { id: 'generator', label: 'Generator', icon: Pen },
@@ -413,8 +356,7 @@ export default function SignaturenPage() {
               className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeTab === id ? 'bg-[#DCFF0C] text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800'
               }`}>
-              <Icon size={15} />
-              {label}
+              <Icon size={15} />{label}
             </button>
           ))}
         </div>
@@ -425,9 +367,9 @@ export default function SignaturenPage() {
           <motion.div key="generator"
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}
-            className="max-w-6xl mx-auto px-6 py-6 space-y-6">
+            className="max-w-[1600px] mx-auto px-6 py-6 space-y-6">
 
-            {/* Gespeicherte Signaturen */}
+            {/* Gespeicherte Signaturen – volle Breite */}
             {savedSignatures.length > 0 && (
               <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
                 <button type="button" onClick={() => setSavedListOpen(!savedListOpen)}
@@ -475,261 +417,266 @@ export default function SignaturenPage() {
               </div>
             )}
 
-            {/* ── Formular ── */}
-            <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-3">
-                <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
-                <h2 className="font-semibold text-zinc-800">Deine Daten</h2>
-              </div>
-              <form onSubmit={handleSubmit(handleSave)} className="p-6 space-y-6">
+            {/* ── 2-Spalten: Formular | Vorschau ── */}
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_660px] gap-6 items-start">
 
-                {/* Firma + Standorte-Toggle */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Firma (Absender) <span className="text-red-500">*</span>
-                    </label>
-                    <select {...register('company')} className={inputClass}>
-                      <option value="raederlogistik">Räderlogistik Franchise GmbH</option>
-                      <option value="reifen-gerlach">Reifen Gerlach GmbH</option>
-                      <option value="rtg">RTG GmbH</option>
-                    </select>
-                  </div>
-                  <div className="flex items-end pb-0.5">
-                    <label className="flex items-center gap-3 cursor-pointer select-none">
-                      <input type="checkbox" {...register('showStandorte')} className="w-4 h-4 rounded accent-[#DCFF0C]" />
-                      <div>
-                        <p className="text-sm font-medium text-zinc-700 flex items-center gap-1.5">
-                          <MapPin size={14} className="text-zinc-400" />
-                          Standorte anzeigen
-                        </p>
-                        <p className="text-xs text-zinc-400 mt-0.5">
-                          {standorte.length > 0 ? `${standorte.length} Standorte geladen` : 'Fallback-Liste wird verwendet'}
-                        </p>
-                      </div>
-                    </label>
-                  </div>
+              {/* LINKS: Formular */}
+              <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-3">
+                  <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
+                  <h2 className="font-semibold text-zinc-800">Deine Daten</h2>
                 </div>
+                <form onSubmit={handleSubmit(handleSave)} className="p-6 space-y-5">
 
-                {/* Logo-Auswahl */}
-                {availableLogos.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">
-                      <Image size={14} className="inline mr-1.5 text-zinc-400" />
-                      Logo-Variante
-                    </label>
-                    <div className="flex gap-3 flex-wrap">
-                      {availableLogos.map(logo => (
-                        <button key={logo.id} type="button" onClick={() => setSelectedLogoUrl(logo.filePath)}
-                          className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg border-2 transition-all ${
-                            selectedLogoUrl === logo.filePath ? 'border-[#DCFF0C] bg-[#DCFF0C]/5' : 'border-zinc-200 hover:border-zinc-300'
-                          }`}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={logo.filePath} alt={logo.label} className="h-10 w-auto object-contain" />
-                          <span className="text-xs text-zinc-600">{logo.label}</span>
-                        </button>
-                      ))}
+                  {/* Firma + Standorte-Toggle */}
+                  <div className="grid grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                        Firma <span className="text-red-500">*</span>
+                      </label>
+                      <select {...register('company')} className={inputClass}>
+                        <option value="raederlogistik">Räderlogistik Franchise GmbH</option>
+                        <option value="reifen-gerlach">Reifen Gerlach GmbH</option>
+                        <option value="rtg">RTG GmbH</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end pb-0.5">
+                      <label className="flex items-center gap-3 cursor-pointer select-none">
+                        <input type="checkbox" {...register('showStandorte')} className="w-4 h-4 rounded accent-[#DCFF0C]" />
+                        <div>
+                          <p className="text-sm font-medium text-zinc-700 flex items-center gap-1.5">
+                            <MapPin size={14} className="text-zinc-400" /> Standorte anzeigen
+                          </p>
+                          <p className="text-xs text-zinc-400 mt-0.5">
+                            {standorte.length > 0 ? `${standorte.length} Standorte geladen` : 'Fallback-Liste'}
+                          </p>
+                        </div>
+                      </label>
                     </div>
                   </div>
-                )}
 
-                {/* Name + Position */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Vorname <span className="text-red-500">*</span></label>
-                    <input {...register('firstName')} placeholder="Max" className={inputClass} />
-                    {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
+                  {/* Logo + Profilfoto nebeneinander */}
+                  <div className={`grid gap-5 ${availableLogos.length > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    {availableLogos.length > 0 && (
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 mb-2">
+                          <Image size={14} className="inline mr-1.5 text-zinc-400" />
+                          Logo-Variante
+                        </label>
+                        <div className="flex gap-3 flex-wrap">
+                          {availableLogos.map(logo => (
+                            <button key={logo.id} type="button" onClick={() => setSelectedLogoUrl(logo.filePath)}
+                              className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg border-2 transition-all ${
+                                selectedLogoUrl === logo.filePath ? 'border-[#DCFF0C] bg-[#DCFF0C]/5' : 'border-zinc-200 hover:border-zinc-300'
+                              }`}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={logo.filePath} alt={logo.label} className="h-9 w-auto object-contain" />
+                              <span className="text-xs text-zinc-600">{logo.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <PhotoUploadField
+                      inputRef={photoInputRef}
+                      value={formValues.photoUrl || ''}
+                      isDragging={isDraggingPhoto}
+                      onDragOver={() => setIsDraggingPhoto(true)}
+                      onDragLeave={() => setIsDraggingPhoto(false)}
+                      onDrop={e => { e.preventDefault(); setIsDraggingPhoto(false); if (e.dataTransfer.files?.[0]) handleFileRead(e.dataTransfer.files[0]) }}
+                      onChange={e => { if (e.target.files?.[0]) handleFileRead(e.target.files[0]) }}
+                      onRemove={() => { setValue('photoUrl', ''); if (photoInputRef.current) photoInputRef.current.value = '' }}
+                    />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Nachname <span className="text-red-500">*</span></label>
-                    <input {...register('lastName')} placeholder="Mustermann" className={inputClass} />
-                    {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Position <span className="text-red-500">*</span></label>
-                    <input {...register('position')} placeholder="Vertriebsleiter" className={inputClass} />
-                    {errors.position && <p className="text-red-500 text-xs mt-1">{errors.position.message}</p>}
-                  </div>
-                </div>
 
-                {/* Kontakt */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Telefon</label>
-                    <input {...register('phone')} placeholder="02103-9079441" className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Mobil</label>
-                    <input {...register('mobile')} placeholder="0170 1234567" className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">Fax</label>
-                    <input {...register('fax')} placeholder="02103-398111" className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      E-Mail <span className="text-red-500">*</span>
-                    </label>
-                    <input {...register('email')} type="email" placeholder="m.mustermann@raederlogistik.de" className={inputClass} />
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      WhatsApp <span className="text-zinc-400 font-normal">(optional)</span>
-                    </label>
-                    <input {...register('whatsapp')} placeholder="0170 3698733" className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Website <span className="text-zinc-400 font-normal">(optional)</span>
-                    </label>
-                    <input {...register('website')} type="url" placeholder="https://www.raederlogistik.de/" className={inputClass} />
-                    {errors.website && <p className="text-red-500 text-xs mt-1">{errors.website.message}</p>}
-                  </div>
-                </div>
-
-                {/* Adresse + Zoom */}
-                <div>
-                  <p className="text-sm font-medium text-zinc-500 mb-3">
-                    Standort-Adresse <span className="font-normal text-zinc-400">(optional – überschreibt Firmenvorgabe für Franchise-Standorte)</span>
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Straße</label>
-                      <input {...register('street')} placeholder="z. B. Hauptstraße 12" className={inputClass} />
+                  {/* Name + Position */}
+                  <div className="grid grid-cols-3 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Vorname <span className="text-red-500">*</span></label>
+                      <input {...register('firstName')} placeholder="Max" className={inputClass} />
+                      {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">PLZ + Ort</label>
-                      <input {...register('zipCity')} placeholder="40721 Hilden" className={inputClass} />
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Nachname <span className="text-red-500">*</span></label>
+                      <input {...register('lastName')} placeholder="Mustermann" className={inputClass} />
+                      {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
                     </div>
-                    <div className="md:col-span-2">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Position <span className="text-red-500">*</span></label>
+                      <input {...register('position')} placeholder="Vertriebsleiter" className={inputClass} />
+                      {errors.position && <p className="text-red-500 text-xs mt-1">{errors.position.message}</p>}
+                    </div>
+                  </div>
+
+                  {/* Kontakt – 3-spaltig */}
+                  <div className="grid grid-cols-3 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Telefon</label>
+                      <input {...register('phone')} placeholder="02103-9079441" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Mobil</label>
+                      <input {...register('mobile')} placeholder="0170 1234567" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Fax</label>
+                      <input {...register('fax')} placeholder="02103-398111" className={inputClass} />
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                        Zoom-Link <span className="text-zinc-400 font-normal">(optional)</span>
+                        E-Mail <span className="text-red-500">*</span>
                       </label>
-                      <input {...register('zoomLink')} type="url" placeholder="https://us05web.zoom.us/j/..." className={inputClass} />
+                      <input {...register('email')} type="email" placeholder="m.mustermann@raederlogistik.de" className={inputClass} />
+                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">WhatsApp</label>
+                      <input {...register('whatsapp')} placeholder="0170 3698733" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700 mb-1.5">Website</label>
+                      <input {...register('website')} type="url" placeholder="https://www.raederlogistik.de/" className={inputClass} />
+                      {errors.website && <p className="text-red-500 text-xs mt-1">{errors.website.message}</p>}
                     </div>
                   </div>
-                </div>
 
-                {/* Profilfoto */}
-                <PhotoUploadField
-                  inputRef={photoInputRef}
-                  value={formValues.photoUrl || ''}
-                  isDragging={isDraggingPhoto}
-                  onDragOver={() => setIsDraggingPhoto(true)}
-                  onDragLeave={() => setIsDraggingPhoto(false)}
-                  onDrop={e => { e.preventDefault(); setIsDraggingPhoto(false); if (e.dataTransfer.files?.[0]) handleFileRead(e.dataTransfer.files[0]) }}
-                  onChange={e => { if (e.target.files?.[0]) handleFileRead(e.target.files[0]) }}
-                  onRemove={() => { setValue('photoUrl', ''); if (photoInputRef.current) photoInputRef.current.value = '' }}
-                />
-
-                {/* Banner */}
-                <BannerList banners={banners} onChange={setBanners} />
-
-                {/* Rechtliche Angaben */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-5 rounded-full bg-[#DCFF0C]" />
-                    <p className="text-sm font-semibold text-zinc-800">Rechtliche Angaben</p>
-                    <span className="text-xs text-zinc-400">Welche Firmen sollen im Footer erscheinen?</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {ALL_COMPANIES.map(({ key, label }) => {
-                      const c = COMPANY_CONFIG[key]
-                      const checked = legalCompanies.includes(key)
-                      return (
-                        <label key={key}
-                          className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                            checked ? 'border-[#DCFF0C] bg-[#DCFF0C]/5' : 'border-zinc-200 hover:border-zinc-300'
-                          }`}>
-                          <input type="checkbox" checked={checked} onChange={() => toggleLegalCompany(key)}
-                            className="mt-0.5 w-4 h-4 rounded accent-[#DCFF0C] shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-zinc-800">{label}</p>
-                            <p className="text-xs text-zinc-400 mt-0.5">{c.legal.ceo}</p>
-                            <p className="text-xs text-zinc-400">{c.legal.vatId}</p>
-                          </div>
-                        </label>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Speichern */}
-                <div className="pt-4 border-t border-zinc-100 flex items-center gap-4 flex-wrap">
-                  <div className="flex-1 min-w-[200px]">
-                    <input {...register('name')} placeholder="Signatur-Name (optional)" className={inputClass} />
-                  </div>
-                  <button type="submit"
-                    className="flex items-center gap-2 px-4 py-2.5 bg-zinc-700 text-white text-sm font-medium rounded-lg hover:bg-zinc-600 transition-colors whitespace-nowrap">
-                    {saved ? <Check size={15} className="text-[#DCFF0C]" /> : <Save size={15} />}
-                    {saved ? 'Gespeichert!' : 'Signatur speichern'}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* E-Mail Vorschau */}
-            <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-6 rounded-full bg-[#DCFF0C]" />
-                  <h2 className="font-semibold text-zinc-800">Vorschau</h2>
-                </div>
-                <span className="text-xs text-zinc-400 bg-zinc-50 px-3 py-1 rounded-full border border-zinc-100">Live-Vorschau</span>
-              </div>
-
-              <div className="bg-zinc-100 p-4">
-                <div className="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
-                  <div className="border-b border-zinc-100 px-5 py-4 space-y-2">
-                    <div className="flex gap-3 text-sm">
-                      <span className="text-zinc-400 w-14 shrink-0">Von</span>
-                      <span className="text-zinc-700 font-medium">
-                        {(formValues.firstName || 'Vorname') + ' ' + (formValues.lastName || 'Nachname')}
-                        {formValues.email ? ` <${formValues.email}>` : ' <email@beispiel.de>'}
-                      </span>
-                    </div>
-                    <div className="flex gap-3 text-sm">
-                      <span className="text-zinc-400 w-14 shrink-0">An</span>
-                      <span className="text-zinc-500">empfaenger@beispiel.de</span>
-                    </div>
-                    <div className="flex gap-3 text-sm">
-                      <span className="text-zinc-400 w-14 shrink-0">Betreff</span>
-                      <span className="text-zinc-700">Ihre Anfrage</span>
-                    </div>
-                  </div>
-                  <div className="px-5 py-5">
-                    <p className="text-sm text-zinc-600 mb-6">
-                      Sehr geehrte Damen und Herren,<br /><br />
-                      vielen Dank für Ihre Nachricht. Wir melden uns schnellstmöglich bei Ihnen.
+                  {/* Adresse + Zoom */}
+                  <div>
+                    <p className="text-xs font-medium text-zinc-400 mb-2 uppercase tracking-wide">
+                      Standort-Adresse <span className="normal-case">(optional – für Franchise-Standorte)</span>
                     </p>
-                    <div className="border-t border-zinc-200 pt-5">
-                      <SignaturePreview data={signatureData} standorte={standorte} />
+                    <div className="grid grid-cols-3 gap-5">
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-zinc-700 mb-1.5">Straße</label>
+                        <input {...register('street')} placeholder="z. B. Hauptstraße 12" className={inputClass} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 mb-1.5">PLZ + Ort</label>
+                        <input {...register('zipCity')} placeholder="40721 Hilden" className={inputClass} />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-zinc-700 mb-1.5">Zoom-Link</label>
+                        <input {...register('zoomLink')} type="url" placeholder="https://us05web.zoom.us/j/..." className={inputClass} />
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Banner */}
+                  <BannerList banners={banners} onChange={setBanners} />
+
+                  {/* Rechtliche Angaben */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-5 rounded-full bg-[#DCFF0C]" />
+                      <p className="text-sm font-semibold text-zinc-800">Rechtliche Angaben</p>
+                      <span className="text-xs text-zinc-400">Welche Firmen sollen im Footer erscheinen?</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {ALL_COMPANIES.map(({ key, label }) => {
+                        const c = COMPANY_CONFIG[key]
+                        const checked = legalCompanies.includes(key)
+                        return (
+                          <label key={key}
+                            className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                              checked ? 'border-[#DCFF0C] bg-[#DCFF0C]/5' : 'border-zinc-200 hover:border-zinc-300'
+                            }`}>
+                            <input type="checkbox" checked={checked} onChange={() => toggleLegalCompany(key)}
+                              className="mt-0.5 w-4 h-4 rounded accent-[#DCFF0C] shrink-0" />
+                            <div>
+                              <p className="text-sm font-medium text-zinc-800">{label}</p>
+                              <p className="text-xs text-zinc-400 mt-0.5">{c.legal.ceo}</p>
+                              <p className="text-xs text-zinc-400">{c.legal.vatId}</p>
+                            </div>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Speichern */}
+                  <div className="pt-4 border-t border-zinc-100 flex items-center gap-4 flex-wrap">
+                    <div className="flex-1 min-w-[200px]">
+                      <input {...register('name')} placeholder="Signatur-Name (optional)" className={inputClass} />
+                    </div>
+                    <button type="submit"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-zinc-700 text-white text-sm font-medium rounded-lg hover:bg-zinc-600 transition-colors whitespace-nowrap">
+                      {saved ? <Check size={15} className="text-[#DCFF0C]" /> : <Save size={15} />}
+                      {saved ? 'Gespeichert!' : 'Signatur speichern'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* RECHTS: Sticky E-Mail-Vorschau */}
+              <div className="sticky top-6">
+                <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
+                  {/* Vorschau-Header */}
+                  <div className="px-5 py-3.5 border-b border-zinc-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-5 rounded-full bg-[#DCFF0C]" />
+                      <h2 className="font-semibold text-zinc-800 text-sm">E-Mail-Vorschau</h2>
+                    </div>
+                    <span className="text-xs text-zinc-400 bg-zinc-50 px-2.5 py-1 rounded-full border border-zinc-100">Live</span>
+                  </div>
+
+                  {/* E-Mail-Mockup */}
+                  <div className="bg-zinc-100 p-3">
+                    <div className="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
+                      {/* E-Mail-Header */}
+                      <div className="border-b border-zinc-100 px-4 py-3 space-y-1.5">
+                        <div className="flex gap-3 text-xs">
+                          <span className="text-zinc-400 w-12 shrink-0">Von</span>
+                          <span className="text-zinc-700 font-medium truncate">
+                            {(formValues.firstName || 'Vorname') + ' ' + (formValues.lastName || 'Nachname')}
+                            {formValues.email ? ` <${formValues.email}>` : ' <email@beispiel.de>'}
+                          </span>
+                        </div>
+                        <div className="flex gap-3 text-xs">
+                          <span className="text-zinc-400 w-12 shrink-0">An</span>
+                          <span className="text-zinc-500">empfaenger@beispiel.de</span>
+                        </div>
+                        <div className="flex gap-3 text-xs">
+                          <span className="text-zinc-400 w-12 shrink-0">Betreff</span>
+                          <span className="text-zinc-700">Ihre Anfrage</span>
+                        </div>
+                      </div>
+                      {/* E-Mail-Body */}
+                      <div className="px-4 py-4">
+                        <p className="text-xs text-zinc-500 mb-4 leading-relaxed">
+                          Sehr geehrte Damen und Herren,<br /><br />
+                          vielen Dank für Ihre Nachricht.
+                        </p>
+                        <div className="border-t border-zinc-200 pt-4 overflow-x-auto">
+                          <SignaturePreview data={signatureData} standorte={standorte} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Copy-Button */}
+                  <div className="px-5 py-4 border-t border-zinc-100 flex items-center justify-between gap-3 flex-wrap">
+                    <p className="text-xs text-zinc-500">
+                      HTML kopieren →{' '}
+                      <Link href="/signaturen/anleitung" className="text-zinc-700 font-medium hover:underline">Outlook-Anleitung</Link>
+                    </p>
+                    <button onClick={handleCopyHTML}
+                      className="flex items-center gap-2 bg-[#DCFF0C] text-zinc-900 font-semibold py-2 px-5 rounded-xl text-sm hover:bg-[#c8ec00] active:scale-[0.98] transition-all whitespace-nowrap">
+                      <AnimatePresence mode="wait">
+                        {copied ? (
+                          <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
+                            <Check size={15} /> HTML kopiert!
+                          </motion.span>
+                        ) : (
+                          <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
+                            <Copy size={15} /> HTML-Code kopieren
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <div className="px-6 py-5 border-t border-zinc-100 flex items-center justify-between gap-4 flex-wrap">
-                <p className="text-sm text-zinc-500">
-                  HTML-Code kopieren und in Outlook als Signatur einfügen.
-                  <Link href="/signaturen/anleitung" className="text-zinc-800 font-medium ml-1 hover:underline">Anleitung →</Link>
-                </p>
-                <button onClick={handleCopyHTML}
-                  className="flex items-center gap-2 bg-[#DCFF0C] text-zinc-900 font-semibold py-2.5 px-6 rounded-xl text-sm hover:bg-[#c8ec00] active:scale-[0.98] transition-all whitespace-nowrap">
-                  <AnimatePresence mode="wait">
-                    {copied ? (
-                      <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
-                        <Check size={16} /> HTML kopiert!
-                      </motion.span>
-                    ) : (
-                      <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
-                        <Copy size={16} /> HTML-Code kopieren
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </button>
-              </div>
             </div>
           </motion.div>
         )}
