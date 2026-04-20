@@ -207,7 +207,7 @@ function buildSignatureHTML(
     </tr>`).join('\n')
 
   return `<table cellpadding="0" cellspacing="0" border="0" width="600"
-  style="max-width:600px;width:100%;border-collapse:collapse;font-size:0;">
+  style="width:600px;border-collapse:collapse;font-size:0;">
   <tbody>
 
     <!-- ── Hauptzeile ── -->

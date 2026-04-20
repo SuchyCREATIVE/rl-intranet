@@ -32,37 +32,20 @@ interface NavGroup {
 const navGroups: NavGroup[] = [
   {
     items: [
-      {
-        label: 'Startseite',
-        href: '/dashboard',
-        icon: <Home className="w-4 h-4" />,
-      },
+      { label: 'Startseite', href: '/dashboard', icon: <Home className="w-4 h-4" /> },
     ],
   },
   {
     label: 'Tools',
     items: [
-      {
-        label: 'Signaturen',
-        href: '/signaturen',
-        icon: <Mail className="w-4 h-4" />,
-      },
-      {
-        label: 'Links',
-        href: '/links',
-        icon: <ExternalLink className="w-4 h-4" />,
-      },
+      { label: 'Signaturen', href: '/signaturen', icon: <Mail className="w-4 h-4" /> },
+      { label: 'Links', href: '/links', icon: <ExternalLink className="w-4 h-4" /> },
     ],
   },
   {
     label: 'Administration',
     items: [
-      {
-        label: 'Admin',
-        href: '/admin',
-        icon: <ShieldCheck className="w-4 h-4" />,
-        adminOnly: true,
-      },
+      { label: 'Admin', href: '/admin', icon: <ShieldCheck className="w-4 h-4" />, adminOnly: true },
     ],
   },
 ]
@@ -95,15 +78,15 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 64 : 248 }}
+      animate={{ width: collapsed ? 56 : 248 }}
       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-      className="relative flex flex-col h-full shrink-0 overflow-hidden border-r"
-      style={{ backgroundColor: '#ffffff', borderColor: '#e5e7eb' }}
+      className="relative flex flex-col h-full shrink-0 overflow-hidden"
+      style={{ backgroundColor: '#1c1c1c' }}
     >
       {/* Logo Area */}
       <div
-        className="flex items-center justify-between px-4 py-4 border-b shrink-0"
-        style={{ borderColor: '#e5e7eb', minHeight: 56 }}
+        className="flex items-center justify-between px-4 py-4 shrink-0"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', minHeight: 60 }}
       >
         <AnimatePresence mode="wait">
           {!collapsed ? (
@@ -116,15 +99,17 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
               className="flex items-center gap-2.5 overflow-hidden"
             >
               <Image
-                src="/logos/raederlogistik-Logo-Rand.svg"
+                src="/logos/raederlogistik-Logo-negativ.svg"
                 alt="Räderlogistik"
                 width={130}
                 height={40}
                 priority
-                className="h-10 w-auto shrink-0"
+                className="h-9 w-auto shrink-0"
               />
-              <div className="w-px h-6 bg-zinc-200 shrink-0" />
-              <span className="text-sm font-semibold text-zinc-600 whitespace-nowrap">Intranet</span>
+              <div className="w-px h-5 shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }} />
+              <span className="text-sm font-medium whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                Intranet
+              </span>
             </motion.div>
           ) : (
             <motion.div
@@ -140,7 +125,7 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
                 alt="RL"
                 width={28}
                 height={28}
-                className="w-7 h-7 object-contain"
+                className="w-7 h-7 object-contain opacity-80"
               />
             </motion.div>
           )}
@@ -150,14 +135,11 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden">
         {navGroups.map((group, groupIdx) => {
-          const visibleItems = group.items.filter(
-            (item) => !item.adminOnly || isAdmin
-          )
+          const visibleItems = group.items.filter(item => !item.adminOnly || isAdmin)
           if (visibleItems.length === 0) return null
 
           return (
-            <div key={groupIdx} className={groupIdx > 0 ? 'mt-4' : ''}>
-              {/* Group Label */}
+            <div key={groupIdx} className={groupIdx > 0 ? 'mt-5' : ''}>
               <AnimatePresence>
                 {!collapsed && group.label && (
                   <motion.div
@@ -168,14 +150,13 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
                     className="px-4 mb-1"
                   >
                     <span className="text-[10px] font-semibold uppercase tracking-widest"
-                      style={{ color: '#9ca3af' }}>
+                      style={{ color: 'rgba(255,255,255,0.3)' }}>
                       {group.label}
                     </span>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Items */}
               <ul className="space-y-0.5 px-2">
                 {visibleItems.map((item) => {
                   const active = isActive(item.href)
@@ -187,29 +168,33 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
                         className={`
                           group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium
                           transition-all duration-150 relative
-                          ${active
-                            ? 'text-zinc-900 bg-[#DCFF0C]/15'
-                            : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
-                          }
                           ${collapsed ? 'justify-center' : ''}
                         `}
+                        style={{
+                          color: active ? '#ffffff' : 'rgba(255,255,255,0.5)',
+                          backgroundColor: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+                        }}
+                        onMouseEnter={e => {
+                          if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.05)'
+                        }}
+                        onMouseLeave={e => {
+                          if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
+                        }}
                       >
-                        {/* Active indicator */}
+                        {/* Gelber Akzentstreifen links bei aktivem Item */}
                         {active && (
                           <motion.div
                             layoutId="active-nav"
-                            className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
                             style={{ backgroundColor: '#DCFF0C' }}
                             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                           />
                         )}
 
-                        {/* Icon */}
-                        <span className={`shrink-0 ${active ? 'text-zinc-900' : 'text-zinc-400 group-hover:text-zinc-700'}`}>
+                        <span className="shrink-0" style={{ color: active ? '#DCFF0C' : 'rgba(255,255,255,0.35)' }}>
                           {item.icon}
                         </span>
 
-                        {/* Label */}
                         <AnimatePresence>
                           {!collapsed && (
                             <motion.span
@@ -233,15 +218,12 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
         })}
       </nav>
 
-      {/* User + Logout Area */}
-      <div className="border-t px-2 py-3 space-y-1 shrink-0" style={{ borderColor: '#e5e7eb' }}>
-        {/* User Info */}
-        <div
-          className={`flex items-center gap-3 px-3 py-2 rounded-md ${collapsed ? 'justify-center' : ''}`}
-        >
+      {/* User + Logout */}
+      <div className="px-2 py-3 space-y-0.5 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className={`flex items-center gap-3 px-3 py-2 rounded-md ${collapsed ? 'justify-center' : ''}`}>
           <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb' }}>
-            <User className="w-3.5 h-3.5 text-zinc-400" />
+            style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+            <User className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.5)' }} />
           </div>
           <AnimatePresence>
             {!collapsed && (
@@ -252,10 +234,10 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden min-w-0"
               >
-                <p className="text-sm font-medium text-zinc-800 truncate whitespace-nowrap">
+                <p className="text-sm font-medium truncate whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.8)' }}>
                   {userName || 'Benutzer'}
                 </p>
-                <p className="text-xs truncate whitespace-nowrap text-zinc-400">
+                <p className="text-xs truncate whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.35)' }}>
                   {userEmail || ''}
                 </p>
               </motion.div>
@@ -263,19 +245,14 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
           </AnimatePresence>
         </div>
 
-        {/* Logout Button */}
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
           title={collapsed ? 'Abmelden' : undefined}
-          className={`
-            w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium
-            transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed
-            ${collapsed ? 'justify-center' : ''}
-          `}
-          style={{ color: '#6b7280' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-150 disabled:opacity-50 ${collapsed ? 'justify-center' : ''}`}
+          style={{ color: 'rgba(255,255,255,0.4)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
         >
           <LogOut className="w-4 h-4 shrink-0" />
           <AnimatePresence>
@@ -294,22 +271,14 @@ export function Sidebar({ userEmail, userName, userRole }: SidebarProps) {
         </button>
       </div>
 
-      {/* Collapse Toggle Button */}
+      {/* Collapse Toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="absolute -right-3 top-16 z-10 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 shadow-lg"
-        style={{
-          backgroundColor: '#f3f4f6',
-          border: '1px solid #e5e7eb',
-          color: '#6b7280',
-        }}
+        style={{ backgroundColor: '#2a2a2a', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }}
         aria-label={collapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen'}
       >
-        {collapsed ? (
-          <ChevronRight className="w-3.5 h-3.5" />
-        ) : (
-          <ChevronLeft className="w-3.5 h-3.5" />
-        )}
+        {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
       </button>
     </motion.aside>
   )

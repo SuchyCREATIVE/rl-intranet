@@ -38,7 +38,7 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
 
   return (
     <table cellPadding={0} cellSpacing={0} border={0} width={600}
-      style={{ maxWidth: 600, width: '100%', borderCollapse: 'collapse', fontSize: 0 }}>
+      style={{ width: 600, borderCollapse: 'collapse', fontSize: 0 }}>
       <tbody>
         <tr>
 
