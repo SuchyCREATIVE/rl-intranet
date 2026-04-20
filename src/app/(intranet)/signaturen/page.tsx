@@ -193,6 +193,7 @@ function BannerList({ banners, onChange }: { banners: string[]; onChange: (b: st
 export default function SignaturenPage() {
   const [activeTab, setActiveTab] = useState<'generator' | 'anleitung'>('generator')
   const [copied, setCopied] = useState(false)
+  const [copiedRich, setCopiedRich] = useState(false)
   const [saved, setSaved] = useState(false)
   const [isDraggingPhoto, setIsDraggingPhoto] = useState(false)
   const [savedSignatures, setSavedSignatures] = useState<SavedSignature[]>([])
@@ -305,6 +306,27 @@ export default function SignaturenPage() {
     }
     setCopied(true)
     setTimeout(() => setCopied(false), 3000)
+  }, [signatureData, standorte])
+
+  // Für Outlook Mac: als formatiertes Rich-Text kopieren (kein HTML-Code, direkt einfügbar)
+  const handleCopyRich = useCallback(async () => {
+    const html = generateSignatureHTMLSync(signatureData, standorte, window.location.origin)
+    const fullHtml = `<!DOCTYPE html><html><body>${html}</body></html>`
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'text/html': new Blob([fullHtml], { type: 'text/html' }) }),
+      ])
+      setCopiedRich(true)
+      setTimeout(() => setCopiedRich(false), 3000)
+    } catch {
+      // Fallback: neues Fenster öffnen, Signatur gerendert anzeigen
+      const win = window.open('', '_blank', 'width=680,height=420,scrollbars=yes')
+      if (win) {
+        win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Signatur – zum Kopieren</title><style>body{margin:20px;font-family:sans-serif;}p{color:#555;font-size:13px;margin-bottom:16px;}</style></head><body><p>Alles markieren (⌘+A), kopieren (⌘+C), dann in Outlook einfügen (⌘+V).</p>${html}</body></html>`)
+        win.document.close()
+        win.focus()
+      }
+    }
   }, [signatureData, standorte])
 
   const handleSave = useCallback(async (data: FormValues) => {
@@ -685,26 +707,44 @@ export default function SignaturenPage() {
                     </div>
                   </div>
 
-                  {/* Copy-Button */}
-                  <div className="px-5 py-4 border-t border-zinc-100 flex items-center justify-between gap-3 flex-wrap">
-                    <p className="text-xs text-zinc-500">
-                      HTML kopieren →{' '}
-                      <Link href="/signaturen/anleitung" className="text-zinc-700 font-medium hover:underline">Outlook-Anleitung</Link>
-                    </p>
-                    <button onClick={handleCopyHTML}
-                      className="flex items-center gap-2 bg-[#DCFF0C] text-zinc-900 font-semibold py-2 px-5 rounded-xl text-sm hover:bg-[#c8ec00] active:scale-[0.98] transition-all whitespace-nowrap">
+                  {/* Copy-Buttons */}
+                  <div className="px-5 py-4 border-t border-zinc-100 space-y-3">
+                    {/* Primär: Für Outlook Mac – Rich-Text */}
+                    <button onClick={handleCopyRich}
+                      className="w-full flex items-center justify-center gap-2 bg-[#DCFF0C] text-zinc-900 font-semibold py-2.5 px-5 rounded-xl text-sm hover:bg-[#c8ec00] active:scale-[0.98] transition-all">
                       <AnimatePresence mode="wait">
-                        {copied ? (
+                        {copiedRich ? (
                           <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
-                            <Check size={15} /> HTML kopiert!
+                            <Check size={15} /> Kopiert – jetzt in Outlook einfügen (⌘+V)
                           </motion.span>
                         ) : (
                           <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
-                            <Copy size={15} /> HTML-Code kopieren
+                            <Copy size={15} /> Signatur kopieren (für Outlook Mac)
                           </motion.span>
                         )}
                       </AnimatePresence>
                     </button>
+                    {/* Sekundär: HTML-Code für Windows/manuell */}
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs text-zinc-400">
+                        Windows Outlook →{' '}
+                        <Link href="/signaturen/anleitung" className="text-zinc-600 hover:underline">Anleitung</Link>
+                      </p>
+                      <button onClick={handleCopyHTML}
+                        className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-800 border border-zinc-200 hover:border-zinc-300 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap">
+                        <AnimatePresence mode="wait">
+                          {copied ? (
+                            <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-1.5">
+                              <Check size={12} /> HTML kopiert
+                            </motion.span>
+                          ) : (
+                            <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-1.5">
+                              <Copy size={12} /> HTML-Code kopieren
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -742,24 +782,13 @@ function AnleitungContent() {
           ],
         },
         {
-          title: 'Outlook Mac (Microsoft 365, neue Version)',
+          title: 'Outlook Mac (Microsoft 365, Version 16+)',
           steps: [
-            { title: 'Einstellungen öffnen', desc: 'Klicke in der Menüleiste auf Outlook → Einstellungen (⌘,) → „Schreiben und Antworten".' },
-            { title: 'Signaturen aufrufen', desc: 'Klicke auf „Signaturen". Es öffnet sich der Signatur-Editor.' },
-            { title: 'Neue Signatur anlegen', desc: 'Klicke auf „+" (neu) und vergib einen Namen.' },
-            { title: 'HTML einfügen – Methode 1', desc: 'Klicke ins leere Textfeld der Signatur. Dann im macOS-Menü oben: Bearbeiten → Als HTML einfügen. Den zuvor kopierten HTML-Code einfügen.' },
-            { title: 'HTML einfügen – Methode 2 (falls Methode 1 fehlt)', desc: 'HTML-Code in eine Datei (z. B. signatur.html) speichern und in Safari öffnen. Dort alles markieren (⌘+A), kopieren (⌘+C) und direkt ins Signaturfeld einfügen (⌘+V).' },
-            { title: 'Als Standard setzen & schließen', desc: 'Unter „Standardsignatur" das gewünschte Konto + diese Signatur auswählen. Fenster schließen.' },
-          ],
-        },
-        {
-          title: 'Outlook Mac (ältere Version 2016/2019)',
-          steps: [
-            { title: 'Einstellungen öffnen', desc: 'Klicke in der Menüleiste auf Outlook → Einstellungen (⌘,).' },
-            { title: 'Signaturen aufrufen', desc: 'Klicke im Abschnitt „E-Mail" auf „Signaturen".' },
-            { title: 'Neue Signatur anlegen', desc: 'Klicke unten links auf das „+"-Symbol und vergib einen Namen.' },
-            { title: 'HTML-Code einfügen', desc: 'Klicke ins Bearbeitungsfeld der Signatur. Dann im macOS-Menü: Bearbeiten → Als HTML einfügen.' },
-            { title: 'Speichern & schließen', desc: 'Klicke auf „Speichern" und schließe den Dialog.' },
+            { title: 'Signatur kopieren', desc: 'Im Generator auf den gelben Button „Signatur kopieren (für Outlook Mac)" klicken. Die Signatur ist jetzt als formatierter Inhalt in der Zwischenablage.' },
+            { title: 'Einstellungen öffnen', desc: 'In Outlook: Menüleiste → Outlook → Einstellungen (⌘,) → „Schreiben und Antworten" → „Signaturen".' },
+            { title: 'Neue Signatur anlegen', desc: 'Auf „+" klicken, einen Namen eingeben.' },
+            { title: 'Einfügen', desc: 'Ins leere Signaturfeld klicken und ⌘+V drücken. Die fertige Signatur erscheint direkt — kein HTML-Code sichtbar.' },
+            { title: 'Als Standard setzen', desc: 'Unter „Standardsignatur" das Konto auswählen und diese Signatur zuweisen. Fenster schließen.' },
           ],
         },
       ].map(({ title, steps }) => (
