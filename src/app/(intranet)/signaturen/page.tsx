@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Copy, Check, Upload, X, Save, BookOpen, Pen,
   Trash2, FolderOpen, ChevronDown, ChevronUp, MapPin,
-  Image, Plus, ArrowUp, ArrowDown,
+  Image, Plus, ArrowUp, ArrowDown, Download,
 } from 'lucide-react'
 import Link from 'next/link'
 import SignaturePreview from '@/components/SignaturePreview'
@@ -327,40 +327,38 @@ export default function SignaturenPage() {
     setTimeout(() => setSendResult(null), 5000)
   }, [sendEmail, signatureData, standorte])
 
-  // Für Outlook Mac: Vorschau-Seite mit Kopieren-Button öffnen
+  // Für Outlook Mac: Seite öffnen, Signatur ist bereits markiert → Benutzer drückt ⌘C manuell
+  // (JavaScript execCommand produziert falsches Clipboard-Format; nur manuelles ⌘C liefert CF_HTML)
   const handleCopyRich = useCallback(() => {
     const sig = generateSignatureHTMLSync(signatureData, standorte, window.location.origin)
     const page = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Signatur kopieren</title>
+<html><head><meta charset="utf-8"><title>Signatur kopieren – Räderlogistik</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;}
-  #bar{position:fixed;top:0;left:0;right:0;background:#1c1c1c;padding:12px 20px;display:flex;align-items:center;gap:14px;z-index:999;}
-  #bar p{color:rgba(255,255,255,0.6);font-size:12px;flex:1;}
-  #btn{background:#DCFF0C;color:#1c1c1c;border:none;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
-  #btn:hover{background:#c8ec00;}
-  #sig{margin-top:56px;padding:24px;}
+  body{font-family:Arial,Helvetica,sans-serif;background:#f0f0f0;}
+  #bar{position:fixed;top:0;left:0;right:0;background:#1c1c1c;padding:14px 24px;display:flex;align-items:center;gap:16px;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
+  #step{background:#DCFF0C;color:#1c1c1c;padding:8px 18px;border-radius:8px;font-size:14px;font-weight:800;white-space:nowrap;flex-shrink:0;}
+  #bar p{color:rgba(255,255,255,0.75);font-size:13px;line-height:1.6;}
+  kbd{display:inline-block;background:#333;color:#fff;padding:1px 7px;border-radius:5px;font-family:monospace;font-size:13px;font-weight:700;letter-spacing:0.5px;}
+  #sig{margin-top:72px;padding:28px 24px;}
+  #sigContent{display:inline-block;outline:3px solid #DCFF0C;outline-offset:6px;}
 </style>
 <script>
-function copy(){
-  var el=document.getElementById('sigContent');
-  var r=document.createRange();
+window.addEventListener('load', function(){
+  // Signatur automatisch markieren – Benutzer muss nur noch ⌘C drücken
+  var el = document.getElementById('sigContent');
+  var r = document.createRange();
   r.selectNodeContents(el);
-  var s=window.getSelection();
-  s.removeAllRanges();s.addRange(r);
-  var ok=document.execCommand('copy');
+  var s = window.getSelection();
   s.removeAllRanges();
-  var btn=document.getElementById('btn');
-  btn.textContent=ok?'✓ Kopiert! → jetzt in Outlook ⌘+V':'Nochmal versuchen';
-  if(ok)btn.style.background='#a8d400';
-  setTimeout(function(){btn.textContent='Signatur kopieren';btn.style.background='#DCFF0C';},3000);
-}
+  s.addRange(r);
+});
 </script>
 </head>
 <body>
 <div id="bar">
-  <button id="btn" onclick="copy()">Signatur kopieren</button>
-  <p>1. Auf Button klicken &nbsp;→&nbsp; 2. Outlook öffnen &nbsp;→&nbsp; Einstellungen → Signaturen → Neue Signatur → ins Feld klicken → <strong style="color:white;">⌘+V</strong></p>
+  <div id="step">Signatur markiert</div>
+  <p>Drücke jetzt <kbd>⌘C</kbd> zum Kopieren &nbsp;→&nbsp; Outlook öffnen &nbsp;→&nbsp; Einstellungen &rarr; Signaturen &rarr; Neue Signatur &rarr; ins Textfeld klicken &rarr; <kbd>⌘V</kbd></p>
 </div>
 <div id="sig"><div id="sigContent">${sig}</div></div>
 </body></html>`
@@ -368,9 +366,27 @@ function copy(){
     const url = URL.createObjectURL(blob)
     const win = window.open(url, '_blank')
     if (win) win.focus()
-    setTimeout(() => URL.revokeObjectURL(url), 60000)
+    setTimeout(() => URL.revokeObjectURL(url), 120000)
     setCopiedRich(true)
     setTimeout(() => setCopiedRich(false), 3000)
+  }, [signatureData, standorte])
+
+  // Signatur als .htm-Datei herunterladen → direkt in Outlooks Signaturen-Ordner ablegen
+  const handleDownload = useCallback(() => {
+    const sig = generateSignatureHTMLSync(signatureData, standorte, window.location.origin)
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;">${sig}</body></html>`
+    const blob = new Blob([html], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const name = signatureData.firstName && signatureData.lastName
+      ? `Signatur-${signatureData.firstName}-${signatureData.lastName}.htm`
+      : 'Signatur.htm'
+    a.download = name
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
   }, [signatureData, standorte])
 
   const handleSave = useCallback(async (data: FormValues) => {
@@ -788,43 +804,33 @@ function copy(){
                   </div>
 
                   {/* Copy-Buttons */}
-                  <div className="px-5 py-4 border-t border-zinc-100 space-y-3">
-                    {/* Primär: Für Outlook Mac – Rich-Text */}
+                  <div className="px-5 py-4 border-t border-zinc-100 space-y-2">
+
+                    {/* Option 1: Schnell – Markieren & manuell ⌘C */}
                     <button onClick={handleCopyRich}
                       className="w-full flex items-center justify-center gap-2 bg-[#DCFF0C] text-zinc-900 font-semibold py-2.5 px-5 rounded-xl text-sm hover:bg-[#c8ec00] active:scale-[0.98] transition-all">
                       <AnimatePresence mode="wait">
                         {copiedRich ? (
-                          <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
-                            <Check size={15} /> Kopiert – jetzt in Outlook einfügen (⌘+V)
+                          <motion.span key="open" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
+                            <Check size={15} /> Seite geöffnet → jetzt ⌘C drücken
                           </motion.span>
                         ) : (
                           <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
-                            <Copy size={15} /> Signatur kopieren (für Outlook Mac)
+                            <Copy size={15} /> Signatur in Zwischenablage (Outlook Mac)
                           </motion.span>
                         )}
                       </AnimatePresence>
                     </button>
-                    {/* Sekundär: HTML-Code für Windows/manuell */}
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs text-zinc-400">
-                        Windows Outlook →{' '}
-                        <Link href="/signaturen/anleitung" className="text-zinc-600 hover:underline">Anleitung</Link>
-                      </p>
-                      <button onClick={handleCopyHTML}
-                        className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-800 border border-zinc-200 hover:border-zinc-300 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap">
-                        <AnimatePresence mode="wait">
-                          {copied ? (
-                            <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-1.5">
-                              <Check size={12} /> HTML kopiert
-                            </motion.span>
-                          ) : (
-                            <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-1.5">
-                              <Copy size={12} /> HTML-Code kopieren
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
-                      </button>
-                    </div>
+                    <p className="text-xs text-zinc-400 text-center">Seite öffnet sich → Signatur ist markiert → <strong className="text-zinc-600">⌘C</strong> drücken → in Outlook <strong className="text-zinc-600">⌘V</strong></p>
+
+                    {/* Option 2: Datei herunterladen für Outlook-Signaturen-Ordner */}
+                    <button onClick={handleDownload}
+                      className="w-full flex items-center justify-center gap-2 bg-white text-zinc-700 font-medium py-2.5 px-5 rounded-xl text-sm border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 active:scale-[0.98] transition-all">
+                      <Download size={15} />
+                      Signatur als Datei herunterladen (.htm)
+                    </button>
+                    <p className="text-xs text-zinc-400 text-center">Datei in Outlooks Signaturen-Ordner ablegen → <Link href="/signaturen/anleitung" className="text-zinc-600 hover:underline">Anleitung</Link></p>
+
                   </div>
                 </div>
               </div>
@@ -862,13 +868,23 @@ function AnleitungContent() {
           ],
         },
         {
-          title: 'Outlook Mac (Microsoft 365, Version 16+)',
+          title: 'Outlook Mac – Methode 1: Kopieren & Einfügen',
           steps: [
-            { title: 'Signatur kopieren', desc: 'Im Generator auf den gelben Button „Signatur kopieren (für Outlook Mac)" klicken. Die Signatur ist jetzt als formatierter Inhalt in der Zwischenablage.' },
-            { title: 'Einstellungen öffnen', desc: 'In Outlook: Menüleiste → Outlook → Einstellungen (⌘,) → „Schreiben und Antworten" → „Signaturen".' },
-            { title: 'Neue Signatur anlegen', desc: 'Auf „+" klicken, einen Namen eingeben.' },
-            { title: 'Einfügen', desc: 'Ins leere Signaturfeld klicken und ⌘+V drücken. Die fertige Signatur erscheint direkt — kein HTML-Code sichtbar.' },
-            { title: 'Als Standard setzen', desc: 'Unter „Standardsignatur" das Konto auswählen und diese Signatur zuweisen. Fenster schließen.' },
+            { title: 'Signatur öffnen', desc: 'Auf den gelben Button „Signatur in Zwischenablage" klicken. Es öffnet sich ein neuer Browser-Tab mit der markierten Signatur (gelbe Umrandung).' },
+            { title: 'Kopieren', desc: 'Im neuen Tab ⌘C drücken. Die Signatur ist jetzt mit korrekter HTML-Formatierung in der Zwischenablage.' },
+            { title: 'Einstellungen öffnen', desc: 'Outlook: Menüleiste → Outlook → Einstellungen (⌘,) → Schreiben und Antworten → Signaturen.' },
+            { title: 'Neue Signatur', desc: 'Auf „+" klicken, Namen vergeben.' },
+            { title: 'Einfügen', desc: 'Ins Signaturfeld klicken → ⌘V drücken. Die fertige Signatur erscheint formatiert.' },
+          ],
+        },
+        {
+          title: 'Outlook Mac – Methode 2: Datei installieren (zuverlässiger)',
+          steps: [
+            { title: 'Signatur herunterladen', desc: 'Auf „Signatur als Datei herunterladen (.htm)" klicken. Die Datei landet im Downloads-Ordner.' },
+            { title: 'Signaturen-Ordner öffnen', desc: 'Im Finder: ⌘+Shift+G drücken und diesen Pfad einfügen: ~/Library/Group Containers/UBF8T346G9.Office/Outlook/Outlook 15 Profiles/Main Profile/Data/Signatures/' },
+            { title: 'Datei verschieben', desc: 'Die heruntergeladene .htm-Datei in diesen Ordner verschieben (nicht kopieren — verschieben).' },
+            { title: 'Outlook neu starten', desc: 'Outlook schließen (⌘Q) und wieder öffnen.' },
+            { title: 'Signatur auswählen', desc: 'Outlook: Einstellungen → Signaturen. Die neue Signatur erscheint automatisch in der Liste und kann als Standard gesetzt werden.' },
           ],
         },
       ].map(({ title, steps }) => (
