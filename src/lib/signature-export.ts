@@ -105,7 +105,6 @@ function buildSignatureHTML(
   const street  = data.street  || company.address
   const zipCity = data.zipCity || company.city
   const cities  = standorte.length > 0 ? standorte : FALLBACK_STANDORTE
-  const tracksUrl = `${baseUrl}/logos/reifenspuren.png`
 
   // ── Initialen-Fallback ────────────────────────────────────────────────────
   const initials = (data.firstName.charAt(0) + data.lastName.charAt(0)).toUpperCase()
@@ -215,8 +214,7 @@ function buildSignatureHTML(
 
       <!-- Linke Spalte: Weiß, Reifenspuren als Hintergrund, Foto/Initialen -->
       <td width="155" bgcolor="${LB}"
-          background="${tracksUrl}"
-          style="width:155px;background-color:${LB};background-image:url('${tracksUrl}');background-size:115px auto;background-position:center center;background-repeat:no-repeat;vertical-align:middle;text-align:center;padding:22px 12px;">
+          style="width:155px;background-color:${LB};vertical-align:middle;text-align:center;padding:22px 12px;">
         ${photoBlock}
       </td>
 

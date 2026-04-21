@@ -46,10 +46,6 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
           <td width={155} style={{
             width: 155,
             backgroundColor: LB,
-            backgroundImage: 'url(/logos/reifenspuren.png)',
-            backgroundSize: '115px auto',
-            backgroundPosition: 'center center',
-            backgroundRepeat: 'no-repeat',
             verticalAlign: 'middle',
             textAlign: 'center',
             padding: '22px 12px',
