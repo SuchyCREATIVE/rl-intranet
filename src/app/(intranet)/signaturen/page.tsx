@@ -327,25 +327,50 @@ export default function SignaturenPage() {
     setTimeout(() => setSendResult(null), 5000)
   }, [sendEmail, signatureData, standorte])
 
-  // Für Outlook Mac: als formatiertes Rich-Text kopieren (kein HTML-Code, direkt einfügbar)
-  const handleCopyRich = useCallback(async () => {
-    const html = generateSignatureHTMLSync(signatureData, standorte, window.location.origin)
-    const fullHtml = `<!DOCTYPE html><html><body>${html}</body></html>`
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'text/html': new Blob([fullHtml], { type: 'text/html' }) }),
-      ])
-      setCopiedRich(true)
-      setTimeout(() => setCopiedRich(false), 3000)
-    } catch {
-      // Fallback: neues Fenster öffnen, Signatur gerendert anzeigen
-      const win = window.open('', '_blank', 'width=680,height=420,scrollbars=yes')
-      if (win) {
-        win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Signatur – zum Kopieren</title><style>body{margin:20px;font-family:sans-serif;}p{color:#555;font-size:13px;margin-bottom:16px;}</style></head><body><p>Alles markieren (⌘+A), kopieren (⌘+C), dann in Outlook einfügen (⌘+V).</p>${html}</body></html>`)
-        win.document.close()
-        win.focus()
-      }
-    }
+  // Für Outlook Mac: Vorschau-Seite mit Kopieren-Button öffnen
+  const handleCopyRich = useCallback(() => {
+    const sig = generateSignatureHTMLSync(signatureData, standorte, window.location.origin)
+    const page = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Signatur kopieren</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;}
+  #bar{position:fixed;top:0;left:0;right:0;background:#1c1c1c;padding:12px 20px;display:flex;align-items:center;gap:14px;z-index:999;}
+  #bar p{color:rgba(255,255,255,0.6);font-size:12px;flex:1;}
+  #btn{background:#DCFF0C;color:#1c1c1c;border:none;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+  #btn:hover{background:#c8ec00;}
+  #sig{margin-top:56px;padding:24px;}
+</style>
+<script>
+function copy(){
+  var el=document.getElementById('sigContent');
+  var r=document.createRange();
+  r.selectNodeContents(el);
+  var s=window.getSelection();
+  s.removeAllRanges();s.addRange(r);
+  var ok=document.execCommand('copy');
+  s.removeAllRanges();
+  var btn=document.getElementById('btn');
+  btn.textContent=ok?'✓ Kopiert! → jetzt in Outlook ⌘+V':'Nochmal versuchen';
+  if(ok)btn.style.background='#a8d400';
+  setTimeout(function(){btn.textContent='Signatur kopieren';btn.style.background='#DCFF0C';},3000);
+}
+</script>
+</head>
+<body>
+<div id="bar">
+  <button id="btn" onclick="copy()">Signatur kopieren</button>
+  <p>1. Auf Button klicken &nbsp;→&nbsp; 2. Outlook öffnen &nbsp;→&nbsp; Einstellungen → Signaturen → Neue Signatur → ins Feld klicken → <strong style="color:white;">⌘+V</strong></p>
+</div>
+<div id="sig"><div id="sigContent">${sig}</div></div>
+</body></html>`
+    const blob = new Blob([page], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const win = window.open(url, '_blank')
+    if (win) win.focus()
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
+    setCopiedRich(true)
+    setTimeout(() => setCopiedRich(false), 3000)
   }, [signatureData, standorte])
 
   const handleSave = useCallback(async (data: FormValues) => {
