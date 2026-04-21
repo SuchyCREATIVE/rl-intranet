@@ -755,7 +755,7 @@ export default function SignaturenPage() {
                       </button>
                     </div>
                     {sendResult === 'ok' && (
-                      <p className="text-xs text-zinc-500 mt-2">E-Mail gesendet. Öffne sie in Outlook, markiere die Signatur → ⌘+C → in Signaturfeld einfügen → ⌘+V.</p>
+                      <p className="text-xs text-zinc-500 mt-2">Gesendet! In Outlook öffnen → <strong>⌘+A</strong> → <strong>⌘+C</strong> → Einstellungen → Signaturen → Neues Feld → <strong>⌘+V</strong>.</p>
                     )}
                     {sendResult === 'err' && (
                       <p className="text-xs text-red-500 mt-2">Fehler beim Senden. SMTP-Passwort konfiguriert?</p>
