@@ -180,14 +180,16 @@ export default function SignaturePreview({ data, standorte = [] }: SignaturePrev
         {/* Rechtliche Angaben (je Firma eine Zeile) */}
         {legalKeys.map(key => {
           const c = COMPANY_CONFIG[key]
+          const safeName = c.legalName.replace(/GmbH/g, 'Gmb\u200BH')
+          const safeCourt = c.legal.court.replace(/HRB/g, 'HR\u200BB')
           return (
             <tr key={key}>
               <td colSpan={4} style={{ backgroundColor: '#f9f9f9', padding: '6px 18px', borderTop: '1px solid #e8e8e8' }}>
                 <span style={{ fontFamily: F, fontSize: 10, color: '#aaaaaa', lineHeight: 1.4, display: 'block' }}>
-                  <strong style={{ color: '#888888' }}>{c.legalName}</strong>
+                  <strong style={{ color: '#888888' }}>{safeName}</strong>
                   &nbsp;&nbsp;·&nbsp;&nbsp;Geschäftsführer: {c.legal.ceo}
                   &nbsp;&nbsp;·&nbsp;&nbsp;Sitz der Gesellschaft: Hilden
-                  &nbsp;&nbsp;·&nbsp;&nbsp;{c.legal.court}
+                  &nbsp;&nbsp;·&nbsp;&nbsp;{safeCourt}
                   &nbsp;&nbsp;·&nbsp;&nbsp;Steuernummer: {c.legal.taxNo}
                   &nbsp;&nbsp;·&nbsp;&nbsp;USt.-ID: {c.legal.vatId}
                 </span>

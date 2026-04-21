@@ -187,10 +187,14 @@ function buildSignatureHTML(
   const legalKeys = data.legalCompanies ?? [data.company]
   const legalRows = legalKeys.map(key => {
     const c = COMPANY_CONFIG[key]
+    // mso-no-proof:yes deaktiviert Outlooks Smart-Tags / AutoCorrect (GmbH-Autolinks)
+    // Zusätzlich: ZWS (\u200B) in "GmbH" und "HRB" um Muster-Erkennung zu brechen
+    const safeName = c.legalName.replace(/GmbH/g, 'Gmb\u200BH')
+    const safeCourt = c.legal.court.replace(/HRB/g, 'HR\u200BB')
     return `<tr>
       <td colspan="4" style="background-color:#f9f9f9;padding:6px 18px;border-top:1px solid #e8e8e8;">
-        <span style="font-family:${F};font-size:10px;color:#aaaaaa;line-height:1.4;">
-          <strong style="color:#888888;">${c.legalName}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;Geschäftsführer: ${c.legal.ceo}&nbsp;&nbsp;·&nbsp;&nbsp;Sitz der Gesellschaft: Hilden&nbsp;&nbsp;·&nbsp;&nbsp;${c.legal.court}&nbsp;&nbsp;·&nbsp;&nbsp;Steuernummer: ${c.legal.taxNo}&nbsp;&nbsp;·&nbsp;&nbsp;USt.-ID: ${c.legal.vatId}
+        <span style="font-family:${F};font-size:10px;color:#aaaaaa;line-height:1.4;mso-no-proof:yes;">
+          <strong style="color:#888888;mso-no-proof:yes;">${safeName}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;Geschäftsführer: ${c.legal.ceo}&nbsp;&nbsp;·&nbsp;&nbsp;Sitz der Gesellschaft: Hilden&nbsp;&nbsp;·&nbsp;&nbsp;${safeCourt}&nbsp;&nbsp;·&nbsp;&nbsp;Steuernummer: ${c.legal.taxNo}&nbsp;&nbsp;·&nbsp;&nbsp;USt.-ID: ${c.legal.vatId}
         </span>
       </td>
     </tr>`
