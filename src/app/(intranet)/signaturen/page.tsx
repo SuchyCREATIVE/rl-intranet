@@ -806,9 +806,26 @@ window.addEventListener('load', function(){
                   {/* Copy-Buttons */}
                   <div className="px-5 py-4 border-t border-zinc-100 space-y-2">
 
-                    {/* Option 1: Schnell – Markieren & manuell ⌘C */}
-                    <button onClick={handleCopyRich}
+                    {/* Primär: HTML-Code kopieren (für Roundcube/Webmail) */}
+                    <button onClick={handleCopyHTML}
                       className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white font-semibold py-2.5 px-5 rounded-xl text-sm hover:bg-zinc-800 active:scale-[0.98] transition-all">
+                      <AnimatePresence mode="wait">
+                        {copied ? (
+                          <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
+                            <Check size={15} /> HTML kopiert!
+                          </motion.span>
+                        ) : (
+                          <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
+                            <Copy size={15} /> HTML-Code kopieren
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </button>
+                    <p className="text-xs text-zinc-400 text-center">Für Roundcube: Einstellungen → Identitäten → Signatur → <strong className="text-zinc-600">Quellcode</strong> → einfügen</p>
+
+                    {/* Sekundär: Outlook Mac – Zwischenablage */}
+                    <button onClick={handleCopyRich}
+                      className="w-full flex items-center justify-center gap-2 bg-white text-zinc-700 font-medium py-2.5 px-5 rounded-xl text-sm border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 active:scale-[0.98] transition-all">
                       <AnimatePresence mode="wait">
                         {copiedRich ? (
                           <motion.span key="open" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
@@ -816,20 +833,22 @@ window.addEventListener('load', function(){
                           </motion.span>
                         ) : (
                           <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
-                            <Copy size={15} /> Signatur in Zwischenablage (Outlook Mac)
+                            <Copy size={15} /> Für Outlook Mac kopieren
                           </motion.span>
                         )}
                       </AnimatePresence>
                     </button>
-                    <p className="text-xs text-zinc-400 text-center">Seite öffnet sich → Signatur ist markiert → <strong className="text-zinc-600">⌘C</strong> drücken → in Outlook <strong className="text-zinc-600">⌘V</strong></p>
 
-                    {/* Option 2: Datei herunterladen für Outlook-Signaturen-Ordner */}
-                    <button onClick={handleDownload}
-                      className="w-full flex items-center justify-center gap-2 bg-white text-zinc-700 font-medium py-2.5 px-5 rounded-xl text-sm border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 active:scale-[0.98] transition-all">
-                      <Download size={15} />
-                      Signatur als Datei herunterladen (.htm)
-                    </button>
-                    <p className="text-xs text-zinc-400 text-center">Datei in Outlooks Signaturen-Ordner ablegen → <Link href="/signaturen/anleitung" className="text-zinc-600 hover:underline">Anleitung</Link></p>
+                    {/* Tertiär: Datei herunterladen */}
+                    <div className="flex items-center justify-between pt-1">
+                      <button onClick={handleDownload}
+                        className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-800 transition-colors">
+                        <Download size={12} /> Als .htm-Datei herunterladen
+                      </button>
+                      <Link href="/signaturen/anleitung" className="text-xs text-zinc-400 hover:text-zinc-600 hover:underline">
+                        Anleitung
+                      </Link>
+                    </div>
 
                   </div>
                 </div>
